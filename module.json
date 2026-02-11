@@ -39,5 +39,7 @@
       "path": "lang/en.json"
     }
   ],
-  "url": ""
+  "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
+  "manifest": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/raw/main/module.json",
+  "download": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/archive/refs/heads/main.zip",
 }
