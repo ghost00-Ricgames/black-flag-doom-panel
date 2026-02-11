@@ -1,0 +1,25 @@
+{
+  "BFDP.Title": "Doom Tracker",
+  "BFDP.Adversaries": "Adversaries",
+  "BFDP.TotalCR": "Total CR",
+  "BFDP.StartingDoom": "Initial Bank",
+  "BFDP.CurrentDoom": "Current Doom",
+  "BFDP.OverrideTooltip": "Unlock to manually edit Doom value",
+  
+  "BFDP.GenerateHeader": "Generate Doom",
+  "BFDP.GainPC1": "PC Natural 1",
+  "BFDP.GainNPC20": "NPC Natural 20",
+  "BFDP.GainManual": "Manual +1",
+
+  "BFDP.SpendHeader": "Spend Doom",
+  "BFDP.SpendAdv": "Advantage (1)",
+  "BFDP.SpendDis": "Disadvantage (1)",
+  "BFDP.SpendAction": "Extra Action (2)",
+  "BFDP.SpendRecharge": "Recharge (3)",
+  "BFDP.SpendCustom": "Custom Spend",
+  "BFDP.SpendBtn": "Spend",
+
+  "BFDP.OverlayLabel": "DOOM",
+  "BFDP.CombatEndConfirm": "Combat ended. Should the Doom Panel and Player Overlay be closed?",
+  "BFDP.NoCombatants": "No adversaries detected in combat tracker."
+}
