@@ -2,6 +2,9 @@
 
 A dedicated GM tool for the **Tales of the Valiant / Black Flag Roleplaying** system in Foundry VTT. This module tracks the Doom Bank, automates generation rules, and provides a dramatic player-facing overlay.
 
+![Doom Panel GM View](GM Doom Tracker.jpg)
+
+
 ## Features
 - **GM Doom Panel**: Track adversaries and Max CR in current combat.
 - **Automated Generation**: Buttons to quickly add Doom for PC Natural 1s or NPC Natural 20s.
