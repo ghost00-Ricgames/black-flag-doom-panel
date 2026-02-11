@@ -16,9 +16,9 @@ jobs:
           -d '{
             "id": "black-flag-doom-panel",
             "release": {
-              "version": "1.0.0",
+              "version": "1.0.1",
               "manifest": "https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json",
-              "notes": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/tag/1.0.0",
+              "notes": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/tag/1.0.1",
               "compatibility": {
                 "minimum": "13",
                 "verified": "13"
