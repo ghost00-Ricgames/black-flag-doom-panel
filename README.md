@@ -7,11 +7,11 @@ A dedicated GM tool for the **Tales of the Valiant / Black Flag Roleplaying** sy
 
 ### Doom Panel
 Monitor Max CR, how many enemies at a glance.
-![GM View](GM Doom Tracker.jpg)
+![GM View](doomtracker.jpg)
 
 ### Doom Bank Overlay
 Build tension with always visible Doom Bank. 
-![Doom Bank](Player Doom Bank.jpg)
+![Doom Bank](doombank.jpg)
 
 ## Features
 - **GM Doom Panel**: Track adversaries and Max CR in current combat.
