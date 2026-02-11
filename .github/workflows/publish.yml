@@ -1,0 +1,27 @@
+name: Update Foundry Package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Foundry Website
+        run: |
+          curl -X POST "https://api.foundryvtt.com/_api/packages/release_version/" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: ${{ secrets.FOUNDRY_API_KEY }}" \
+          -d '{
+            "id": "black-flag-doom-panel",
+            "release": {
+              "version": "1.0.0",
+              "manifest": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/1.0.0/module.json",
+              "notes": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/tag/1.0.0",
+              "compatibility": {
+                "minimum": "13",
+                "verified": "13"
+              }
+            }
+          }'
