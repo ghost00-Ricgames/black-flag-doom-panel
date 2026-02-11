@@ -1,0 +1,49 @@
+<div class="doom-panel-container">
+    <div class="doom-section encounter-stats">
+        <div class="stat-row">
+            <span><i class="fas fa-users-slash"></i> Adversaries:</span>
+            <span class="stat-val">{{adversaryCount}}</span>
+        </div>
+        <div class="stat-row">
+            <span><i class="fas fa-crown"></i> Max CR:</span>
+            <span class="stat-val">{{maxCR}}</span>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="doom-section doom-bank">
+        <label>Current Doom</label>
+        <div class="doom-value-display">
+            <input type="number" id="manual-doom-input" value="{{doom}}">
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="doom-section gain-section">
+        <h3>Generate Doom</h3>
+        <div class="btn-column">
+            <button class="gain-btn" data-type="pc1"><i class="fas fa-dice-one"></i> PC Natural 1</button>
+            <button class="gain-btn" data-type="npc20"><i class="fas fa-dice-d20"></i> NPC Natural 20</button>
+            <button class="gain-btn" data-type="manual"><i class="fas fa-plus"></i> Manual +1</button>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="doom-section spend-section">
+        <h3>Spend Doom</h3>
+        <div class="btn-grid">
+            <button class="spend-btn" data-cost="1"><i class="fas fa-angle-double-up"></i> ADV (1)</button>
+            <button class="spend-btn" data-cost="1"><i class="fas fa-angle-double-down"></i> DIS (1)</button>
+            <button class="spend-btn" data-cost="2"><i class="fas fa-bolt"></i> ACT (2)</button>
+            <button class="spend-btn" data-cost="3"><i class="fas fa-sync-alt"></i> RCH (3)</button>
+        </div>
+
+        <div class="custom-spend-row">
+            <input type="number" id="custom-spend-val" value="1" min="1">
+            <button class="spend-btn custom-btn">Spend</button>
+        </div>
+    </div>
+</div>
