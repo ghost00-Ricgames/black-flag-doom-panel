@@ -1,18 +1,16 @@
 {
   "id": "black-flag-doom-panel",
   "title": "Black Flag Doom Panel",
-  "description": "A GM tool for tracking and spending Doom Points in Tales of the Valiant. Includes a 'Doomsday' overlay for players.",
-  "version": "1.0.0",
-  "library": false,
-  "manifest": "https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json",
-  "download": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/archive/refs/heads/main.zip",
+  "description": "A GM tool for Black Flag Roleplaying to track and manage Doom points with a visual interface.",
   "authors": [
     {
-      "name": "Ghost00-RicsGame"
+      "name": "Ghost00-RicsGames",
+      "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
     }
   ],
+  "version": "1.0.0",
   "compatibility": {
-    "minimum": "12",
+    "minimum": "13",
     "verified": "13",
     "maximum": "13"
   },
@@ -22,7 +20,7 @@
         "id": "black-flag",
         "manifest": "https://github.com/KoboldPress/black-flag-foundry-vtt/releases/latest/download/system.json",
         "compatibility": {
-          "minimum": "0.1.0"
+          "minimum": "0.9.0"
         }
       }
     ]
@@ -34,12 +32,7 @@
     "styles/style.css"
   ],
   "packs": [],
-  "languages": [
-    {
-      "lang": "en",
-      "name": "English",
-      "path": "lang/en.json"
-    }
-  ],
-  "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
+  "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel",
+  "manifest": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/1.0.0/module.json",
+  "download": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/1.0.0/black-flag-doom-panel.zip"
 }
