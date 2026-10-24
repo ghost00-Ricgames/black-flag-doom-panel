@@ -1,49 +1,124 @@
-// Minimal mocked contract test. A real Foundry V14 client must still be tested.
+// Foundry V14 mocked contract test for Milestone 2.
+// Run from repository root: node tests/mock-smoke.mjs
 import assert from "node:assert/strict";
 
-const events = {}, values = new Map(), defs = new Map(), calls = [];
-globalThis.Hooks = { once(k, fn) { events[k] = fn; }, on(k, fn) { events[k] = fn; } };
+const hooks = new Map();
+const audio = [];
+const warnings = [];
+globalThis.Hooks = {
+  once(name, fn) { hooks.set(name, fn); },
+  on(name, fn) { hooks.set(name, fn); }
+};
 
-class Base {
+class MockApp {
   rendered = false;
-  element = { querySelector() { return null; } };
+  element = { querySelector: () => null };
   async render() { this.rendered = true; return this; }
   async close() { this.rendered = false; return this; }
   async _prepareContext() { return {}; }
   async _onRender() {}
 }
-globalThis.foundry = {
-  applications: { api: { ApplicationV2: Base, HandlebarsApplicationMixin: klass => klass } },
-  audio: { AudioHelper: { play: (data, socket) => calls.push({ data, socket }) } }
-};
-globalThis.ui = { notifications: { warn: msg => calls.push({ warn: msg }) } };
 
-const enemies = [
-  { actor: { hasPlayerOwner: false, system: { attributes: { cr: 3 } } } },
-  { actor: { hasPlayerOwner: true, system: { attributes: { cr: 2 } } } }
-];
-globalThis.game = {
-  user: { isGM: true },
-  combats: { active: { combatants: enemies } },
-  settings: {
-    register: (id, key, data) => { defs.set(key, data); values.set(key, data.default); },
-    get: (id, key) => values.get(key),
-    set: async (id, key, value) => { values.set(key, value); defs.get(key)?.onChange(value); }
+globalThis.foundry = {
+  applications: { api: { ApplicationV2: MockApp, HandlebarsApplicationMixin: Type => Type } },
+  audio: { AudioHelper: { play: (data, broadcast) => audio.push({ data, broadcast }) } }
+};
+globalThis.ui = {
+  notifications: {
+    warn: text => warnings.push(text),
+    error: text => { throw Error(text); }
   }
 };
 
+const combats = {
+  contents: [],
+  active: null,
+  viewed: null,
+  get(id) { return this.contents.find(combat => combat.id === id); },
+  [Symbol.iterator]() { return this.contents.values(); }
+};
+
+const enemy = { actor: { hasPlayerOwner: false, system: { attributes: { cr: 3 } } } };
+const gm = { id: "gm1", isGM: true };
+globalThis.game = {
+  user: gm,
+  users: { activeGM: gm },
+  combats,
+  settings: { register() {} }
+};
+
+function makeCombat(id) {
+  return {
+    id,
+    started: false,
+    combatants: [enemy],
+    bank: null,
+    getFlag() { return this.bank; },
+    async setFlag(_module, _key, value) {
+      this.bank = structuredClone(value);
+      hooks.get("updateCombat")(this, { flags: {} }, {}, gm.id);
+      await Promise.resolve();
+    }
+  };
+}
+
 await import("../scripts/main.mjs");
-events.init();
-await events.ready();
-assert.equal(game.blackFlagDoomPanel.initialized, true);
-await events.combatStart({ combatants: enemies });
-assert.equal(values.get("doomPoints"), 2); // temporarily retained v1 behavior
-assert.equal(values.get("activeCombat"), true);
+hooks.get("init")();
+
+const a = makeCombat("A");
+const b = makeCombat("B");
+combats.contents.push(a, b);
+combats.viewed = combats.active = a;
+hooks.get("ready")();
+
+async function flush() {
+  for (let i = 0; i < 80; i++) await Promise.resolve();
+}
+
+a.started = true;
+hooks.get("updateCombat")(a, { round: 1 }, {}, gm.id);
+await flush();
+assert.deepEqual([a.bank.active, a.bank.current], [true, 2]);
 assert.equal(game.blackFlagDoomPanel.panel.rendered, true);
-assert.equal(game.blackFlagDoomPanel.overlay.rendered, true);
-const context = await game.blackFlagDoomPanel.panel._prepareContext({});
-assert.equal(context.maxCR, 3);
-assert.equal(context.adversaryCount, 1);
-assert.ok(calls.every(c => c.socket !== true)); // no repeat socket broadcast
-assert.ok(calls.filter(c => c.data).every(c => c.data.autoplay === true));
-console.log("Mock smoke test passed.");
+
+const panel = game.blackFlagDoomPanel.panel;
+const gain = panel.constructor.DEFAULT_OPTIONS.actions.gainDoom;
+await Promise.all(Array.from({ length: 5 }, () => gain.call(panel)));
+await flush();
+assert.equal(a.bank.current, 7);
+assert.equal(a.bank.revision, 6);
+
+b.started = true;
+combats.viewed = combats.active = b;
+hooks.get("updateCombat")(b, { round: 1 }, {}, gm.id);
+await flush();
+assert.equal(b.bank.current, 2);
+assert.equal(a.bank.current, 7);
+
+combats.viewed = a;
+hooks.get("canvasReady")();
+assert.equal((await panel._prepareContext({})).doom, 7);
+
+combats.viewed = b;
+hooks.get("deleteCombat")(a);
+assert.equal(b.bank.current, 2);
+
+b.started = false;
+hooks.get("updateCombat")(b, { round: 0 }, {}, gm.id);
+await flush();
+assert.equal(b.bank.active, false);
+assert.equal(panel.rendered, false);
+
+b.started = true;
+hooks.get("updateCombat")(b, { round: 1 }, {}, gm.id);
+await flush();
+assert.deepEqual([b.bank.active, b.bank.current], [true, 2]);
+
+game.user = { id: "gm2", isGM: true };
+await gain.call(panel);
+await flush();
+assert.equal(b.bank.current, 2);
+assert.ok(warnings.some(message => message.includes("active GM")));
+assert.ok(audio.every(({ data, broadcast }) => data.autoplay === true && broadcast === false));
+
+console.log("Milestone 2 mocked combat lifecycle, serialization, two-GM lock and audio passed.");
