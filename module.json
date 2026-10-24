@@ -1,14 +1,14 @@
 {
   "id": "black-flag-doom-panel",
   "title": "Black Flag Doom Panel (v2 Development)",
-  "description": "Development: compact GM panel with Foundry V14 rule-explanation hover tooltips.",
+  "description": "Development: Foundry V14 Doom Panel with configurable combat-start, gain, and spend sounds.",
   "authors": [
     {
       "name": "ghost00-Ricgames",
       "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
     }
   ],
-  "version": "2.0.0-dev.6",
+  "version": "2.0.0-dev.7",
   "compatibility": {
     "minimum": "14.359",
     "verified": "14"

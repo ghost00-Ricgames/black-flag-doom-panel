@@ -1,18 +1,16 @@
 /**
- * Black Flag Doom Panel - v2 development / Milestone 2.
- * Foundry V14 ApplicationV2 + Combat document-scoped Doom state.
- *
- * Rules and action labels intentionally remain at v1.x functionality parity.
- * ToV Monster Vault / GMG Doom calculation and named actions come in Milestone 3.
+ * Black Flag Doom Panel - Foundry V14 development build.
+ * Encounter-specific Doom under Monster Vault rules, optional GMG Expanded Doom,
+ * compact accessible UI, and configurable local audio playback.
  */
 const MODULE_ID = "black-flag-doom-panel";
 const DOOM_FLAG = "doomState";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const AUDIO = Object.freeze({
-  gain: { src: "sounds/lock.wav", volume: 0.8 },
-  spend: { src: "sounds/dice.wav", volume: 0.6 },
-  start: { src: "sounds/drums.wav", volume: 0.8 }
+  gain: { src: "sounds/lock.wav", volume: 0.8, enabledKey: "audioGainEnabled", fileKey: "audioGainFile" },
+  spend: { src: "sounds/dice.wav", volume: 0.6, enabledKey: "audioSpendEnabled", fileKey: "audioSpendFile" },
+  start: { src: "sounds/drums.wav", volume: 0.8, enabledKey: "audioStartEnabled", fileKey: "audioStartFile" }
 });
 
 const state = {
@@ -30,8 +28,25 @@ function reportError(context, error) {
 }
 
 function playLocal(kind) {
-  const options = AUDIO[kind];
-  if (options) foundry.audio.AudioHelper.play({ ...options, autoplay: true }, false);
+  const config = AUDIO[kind];
+  if (!config || game.settings.get(MODULE_ID, "audioMuteClient")) return;
+  if (!game.settings.get(MODULE_ID, config.enabledKey)) return;
+  const configured = game.settings.get(MODULE_ID, config.fileKey);
+  const src = typeof configured === "string" && configured.trim() ? configured.trim() : config.src;
+  const factor = Number(game.settings.get(MODULE_ID, "audioVolume"));
+  const volume = Math.min(1, Math.max(0, config.volume * (Number.isFinite(factor) ? factor / 100 : 1)));
+  if (volume <= 0) return;
+
+  // Each client already observes the synchronized Doom bank update.
+  // Never rebroadcast or every player would hear one sound per connected client.
+  try {
+    const sound = foundry.audio.AudioHelper.play({ src, volume, autoplay: true }, false);
+    if (sound && typeof sound.catch === "function") {
+      void sound.catch(error => console.warn(MODULE_ID + " | Audio could not play", src, error));
+    }
+  } catch (error) {
+    console.warn(MODULE_ID + " | Audio could not play", src, error);
+  }
 }
 
 function activeAuthority() {
@@ -516,6 +531,41 @@ Hooks.once("init", () => {
     default: "",
     onChange: () => syncVisibleApplications()
   });
+
+  // World settings are GM-controlled, so all clients hear the same chosen
+  // event sounds. A blank file field retains the established built-in sound.
+  const audioEvents = [
+    ["Start", "Combat start", "sounds/drums.wav"],
+    ["Gain", "Doom gain", "sounds/lock.wav"],
+    ["Spend", "Doom spend", "sounds/dice.wav"]
+  ];
+  for (const [key, label, original] of audioEvents) {
+    game.settings.register(MODULE_ID, "audio" + key + "Enabled", {
+      name: label + " sound",
+      hint: "Play the " + label.toLowerCase() + " effect for GM and player clients.",
+      scope: "world", config: true, type: Boolean, default: true
+    });
+    game.settings.register(MODULE_ID, "audio" + key + "File", {
+      name: label + " custom audio",
+      hint: "Optional replacement audio file. Leave blank for the original: " + original,
+      scope: "world", config: true,
+      type: new foundry.data.fields.FilePathField({ categories: ["AUDIO"], blank: true, nullable: false }),
+      default: ""
+    });
+  }
+  game.settings.register(MODULE_ID, "audioVolume", {
+    name: "Doom sound volume (%)",
+    hint: "Overall volume adjustment for Doom effects, from 0 (silent) to 100 (original volume).",
+    scope: "world", config: true,
+    type: new foundry.data.fields.NumberField({ nullable: false, min: 0, max: 100, step: 5 }),
+    default: 100
+  });
+  game.settings.register(MODULE_ID, "audioMuteClient", {
+    name: "Mute Doom sounds on this browser",
+    hint: "Local preference: silence Doom effects for this browser only, without changing other players' audio.",
+    scope: "client", config: true, type: Boolean, default: false
+  });
+
   game.blackFlagDoomPanel = state;
 });
 
