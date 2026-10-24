@@ -1,14 +1,14 @@
 {
   "id": "black-flag-doom-panel",
   "title": "Black Flag Doom Panel (v2 Development)",
-  "description": "Development: Foundry V14, combat-specific Doom, independent player encounter selection.",
+  "description": "Development: Monster Vault default Doom, optional Game Master's Guide Expanded Doom.",
   "authors": [
     {
       "name": "ghost00-Ricgames",
       "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
     }
   ],
-  "version": "2.0.0-dev.3",
+  "version": "2.0.0-dev.4",
   "compatibility": {
     "minimum": "14.359",
     "verified": "14"
@@ -30,7 +30,8 @@
   "styles": [
     "styles/style.css",
     "styles/app-v2-overlay.css",
-    "styles/milestone2.css"
+    "styles/milestone2.css",
+    "styles/milestone3.css"
   ],
   "languages": [
     {

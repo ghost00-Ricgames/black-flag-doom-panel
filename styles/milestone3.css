@@ -1,0 +1,4 @@
+.doom-subnote { font-size: 10px; color: #d2b7b7; margin: 4px 0; line-height: 1.35; }
+.expanded-doom-section { border-top: 1px solid #753939; padding-top: 8px; }
+.doom-panel-container .btn-column button { width: 100%; }
+.doom-panel-container button:disabled { opacity: 0.43; cursor: not-allowed; }

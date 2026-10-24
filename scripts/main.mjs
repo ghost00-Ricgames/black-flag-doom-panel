@@ -51,10 +51,56 @@ function displayedCombat() {
   return combat?.started ? combat : null;
 }
 
+function hostileCombatants(combat) {
+  if (!combat) return [];
+  const hostile = globalThis.CONST?.TOKEN_DISPOSITIONS?.HOSTILE ?? -1;
+  return [...combat.combatants].filter(entry => {
+    if (!entry.actor) return false;
+    const disposition = entry.token?.disposition ?? entry.token?.document?.disposition;
+    // Token disposition is authoritative when present. This excludes
+    // friendly and neutral NPC allies from encounter-CR calculations.
+    if (disposition !== undefined && disposition !== null) return disposition === hostile;
+    return !entry.actor.hasPlayerOwner;
+  });
+}
+
+function encounterCR(combat) {
+  return hostileCombatants(combat).reduce((sum, entry) => {
+    const cr = Number(entry.actor?.system?.attributes?.cr);
+    return sum + (Number.isFinite(cr) && cr > 0 ? cr : 0);
+  }, 0);
+}
+
+// Monster Vault p.13: Doom based on the encounter's total CR, NOT highest
+// individual CR plus extra points per combatant.
+function doomTier(cr) {
+  if (cr >= 21) return 6;
+  if (cr >= 17) return 5;
+  if (cr >= 13) return 4;
+  if (cr >= 9) return 3;
+  if (cr >= 5) return 2;
+  return 1;
+}
+
+function encounterBaseline(combat) {
+  return hostileCombatants(combat).length ? doomTier(encounterCR(combat)) : 0;
+}
+
 function readBank(combat) {
   const bank = combat?.getFlag(MODULE_ID, DOOM_FLAG);
-  if (!bank || bank.schema !== 1 || !Number.isSafeInteger(bank.current) || bank.current < 0) return null;
-  return bank;
+  if (!bank || !Number.isSafeInteger(bank.current) || bank.current < 0) return null;
+  if (bank.schema === 2) return bank;
+  if (bank.schema !== 1) return null;
+  // Upgrade experimental dev.2/dev.3 encounters without resetting their total.
+  // Prior spending cannot be reconstructed, so expended Doom starts at 0.
+  return {
+    schema: 2, active: bank.active, current: bank.current,
+    base: encounterBaseline(combat), totalCR: encounterCR(combat),
+    startingBonus: 0, expended: 0,
+    usage: { recharge: false, autoSave: false, autoAttack: false },
+    revision: bank.revision ?? 1, lastAction: bank.lastAction ?? "migrate",
+    delta: bank.delta ?? 0
+  };
 }
 
 function displayedBank() {
@@ -98,24 +144,33 @@ function overlayBank() {
   return bank?.active ? bank : null;
 }
 
-function legacyStartingDoom(combat) {
-  // Temporary v1.x parity: replaced by ToV table / encounter-CR in milestone 3.
-  const adversaries = [...combat.combatants].filter(c => c.actor && !c.actor.hasPlayerOwner);
-  if (!adversaries.length) return 0;
-  const maxCR = Math.max(0, ...adversaries.map(c => Number(c.actor?.system?.attributes?.cr) || 0));
-  const base = maxCR >= 23 ? 6 : maxCR >= 17 ? 5 : maxCR >= 11 ? 4 : maxCR >= 5 ? 3 : 2;
-  return base + adversaries.length - 1;
-}
-
 function newBank(combat) {
   return {
-    schema: 1,
+    schema: 2,
     active: true,
-    current: legacyStartingDoom(combat),
+    current: encounterBaseline(combat),
+    base: encounterBaseline(combat),
+    totalCR: encounterCR(combat),
+    startingBonus: 0,
+    expended: 0,
+    usage: { recharge: false, autoSave: false, autoAttack: false },
     revision: 1,
     lastAction: "start",
     delta: 0
   };
+}
+
+const SPENDS = Object.freeze({
+  advantage: { cost: 1 },
+  disadvantage: { cost: 1 },
+  recharge: { cost: 1, once: "recharge" },
+  autoSave: { cost: 1, once: "autoSave", expanded: true },
+  autoAttack: { cost: 1, once: "autoAttack", expanded: true },
+  movement: { cost: 1, expanded: true }
+});
+
+function expandedEnabled() {
+  return game.settings.get(MODULE_ID, "expandedDoom") === true;
 }
 
 // Serialize all local writes per Combat. Only Foundry's designated active GM
@@ -141,6 +196,9 @@ function queueLifecycleUpdate(combat) {
     const bank = readBank(combat);
     if (combat.started) {
       if (!bank?.active) await persistBank(combat, newBank(combat));
+      else if (combat.getFlag(MODULE_ID, DOOM_FLAG)?.schema === 1) {
+        await persistBank(combat, { ...bank, revision: bank.revision + 1, lastAction: "migrate", delta: 0 });
+      }
     } else if (bank?.active) {
       await persistBank(combat, {
         ...bank, active: false, revision: bank.revision + 1,
@@ -153,16 +211,12 @@ function queueLifecycleUpdate(combat) {
 async function changeDoom(kind, value, combatId) {
   if (!game.user?.isGM) return;
   if (!canEdit()) {
-    ui.notifications.warn("Only the currently active GM can edit Doom. Other GMs can view its total.");
+    ui.notifications.warn("Only the active GM can edit Doom.");
     return;
   }
   const combat = game.combats.get(combatId);
   if (!combat || !combat.started) {
-    ui.notifications.warn("Select a started combat encounter before editing Doom.");
-    return;
-  }
-  if (!Number.isSafeInteger(value) || value < 0 || (kind !== "set" && value === 0)) {
-    ui.notifications.warn("Doom amounts must be valid whole numbers.");
+    ui.notifications.warn("Select a started combat before editing Doom.");
     return;
   }
   try {
@@ -173,22 +227,74 @@ async function changeDoom(kind, value, combatId) {
         bank = newBank(combat);
         await persistBank(combat, bank);
       }
-      let next;
-      if (kind === "gain") next = bank.current + value;
-      else if (kind === "spend") next = bank.current - value;
-      else if (kind === "set") next = value;
-      else return;
-      if (!Number.isSafeInteger(next) || next < 0) {
-        ui.notifications.warn("Insufficient Doom or invalid total.");
+      const prior = bank.current;
+      let next = prior;
+      let expended = bank.expended ?? 0;
+      let startingBonus = bank.startingBonus ?? 0;
+      const usage = { recharge: false, autoSave: false, autoAttack: false, ...bank.usage };
+      let action = kind;
+
+      if (kind === "gain") {
+        if (!Number.isSafeInteger(value) || value < 1) return;
+        next += value; // GM manual grant; not a rule-based recovery.
+      } else if (kind === "set") {
+        if (!Number.isSafeInteger(value) || value < 0) return;
+        next = value; // Correction isn't an actual Doom spend.
+      } else if (kind === "spend") {
+        const descriptor = SPENDS[value];
+        if (!descriptor || (descriptor.expanded && !expandedEnabled())) return;
+        if (descriptor.once && usage[descriptor.once]) {
+          ui.notifications.warn("That Doom option was already used this encounter.");
+          return;
+        }
+        if (prior < descriptor.cost) {
+          ui.notifications.warn("Not enough Doom.");
+          return;
+        }
+        next -= descriptor.cost;
+        expended += descriptor.cost;
+        if (descriptor.once) usage[descriptor.once] = true;
+        action = "spend:" + value;
+      } else if (kind === "customSpend") {
+        if (!Number.isSafeInteger(value) || value < 1 || prior < value) {
+          ui.notifications.warn("Invalid spend or insufficient Doom.");
+          return;
+        }
+        next -= value;
+        expended += value;
+      } else if (kind === "preBonus") {
+        if (!expandedEnabled()) return;
+        // GMG p.73: each qualifying event grants +1, but starting Doom
+        // may never exceed 2 x the encounter's unmodified base.
+        if (bank.base < 1 || startingBonus >= bank.base) {
+          ui.notifications.warn("Expanded starting Doom has reached twice the normal starting amount.");
+          return;
+        }
+        startingBonus += 1;
+        next += 1;
+        action = "pre:" + value;
+      } else if (kind === "recover") {
+        if (!expandedEnabled()) return;
+        if (expended < 1) {
+          ui.notifications.warn("No expended Doom remains to recover.");
+          return;
+        }
+        expended -= 1;
+        next += 1;
+        action = "recover:" + value;
+      } else {
         return;
       }
-      if (next === bank.current) return;
+
+      if (!Number.isSafeInteger(next) || next < 0 || !Number.isSafeInteger(expended)) {
+        ui.notifications.warn("Invalid Doom amount.");
+        return;
+      }
+      if (next === prior && action === "set") return;
       await persistBank(combat, {
-        ...bank,
-        current: next,
-        revision: bank.revision + 1,
-        lastAction: kind,
-        delta: next - bank.current
+        ...bank, schema: 2, current: next, expended, startingBonus, usage,
+        revision: (bank.revision ?? 0) + 1,
+        lastAction: action, delta: next - prior
       });
     });
   } catch (error) {
@@ -251,7 +357,9 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     position: { width: 260, height: "auto" },
     actions: {
       gainDoom: this._gainDoom,
-      spendDoom: this._spendDoom
+      spendDoom: this._spendDoom,
+      preBonus: this._preBonus,
+      recoverDoom: this._recoverDoom
     }
   };
 
@@ -262,15 +370,23 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const combat = displayedCombat();
-    const adversaries = combat
-      ? [...combat.combatants].filter(c => c.actor && !c.actor.hasPlayerOwner)
-      : [];
+    const adversaries = hostileCombatants(combat);
+    const bank = displayedBank();
+    const expanded = expandedEnabled();
     return {
       ...context,
-      doom: displayedBank()?.current ?? 0,
+      doom: bank?.current ?? 0,
       canEdit: canEdit(),
       adversaryCount: adversaries.length,
-      maxCR: Math.max(0, ...adversaries.map(c => Number(c.actor?.system?.attributes?.cr) || 0))
+      totalCR: bank?.totalCR ?? encounterCR(combat),
+      startingDoom: bank?.base ?? encounterBaseline(combat),
+      expanded,
+      spent: bank?.expended ?? 0,
+      startingBonus: bank?.startingBonus ?? 0,
+      startingMaximum: 2 * (bank?.base ?? 0),
+      usedRecharge: bank?.usage?.recharge ?? false,
+      usedAutoSave: bank?.usage?.autoSave ?? false,
+      usedAutoAttack: bank?.usage?.autoAttack ?? false
     };
   }
 
@@ -282,15 +398,27 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   static async _spendDoom(_event, target) {
     const combat = displayedCombat();
     if (!combat) return;
-    const raw = target.classList.contains("custom-btn")
-      ? this.element.querySelector("#custom-spend-val")?.value
-      : target.dataset.cost;
-    const cost = Number(raw);
-    if (!Number.isSafeInteger(cost) || cost < 1) {
-      ui.notifications.warn("Spend cost must be a positive whole number.");
-      return;
+    if (target.classList.contains("custom-btn")) {
+      const raw = this.element.querySelector("#custom-spend-val")?.value;
+      const amount = Number(raw);
+      if (!Number.isSafeInteger(amount) || amount < 1) {
+        ui.notifications.warn("Spend cost must be a positive whole number.");
+        return;
+      }
+      await changeDoom("customSpend", amount, combat.id);
+    } else {
+      await changeDoom("spend", target.dataset.spend, combat.id);
     }
-    await changeDoom("spend", cost, combat.id);
+  }
+
+  static async _preBonus(_event, target) {
+    const combat = displayedCombat();
+    if (combat) await changeDoom("preBonus", target.dataset.trigger, combat.id);
+  }
+
+  static async _recoverDoom(_event, target) {
+    const combat = displayedCombat();
+    if (combat) await changeDoom("recover", target.dataset.trigger, combat.id);
   }
 
   async _onRender(context, options) {
@@ -362,6 +490,12 @@ Hooks.once("init", () => {
   });
   game.settings.register(MODULE_ID, "activeCombat", {
     scope: "world", config: false, type: Boolean, default: false
+  });
+  game.settings.register(MODULE_ID, "expandedDoom", {
+    name: "Enable Expanded Doom (Game Master's Guide)",
+    hint: "Off: Monster Vault Doom only. On: add GMG extra starting Doom, recover expended Doom, and expanded spending options.",
+    scope: "world", config: true, type: Boolean, default: false,
+    onChange: () => syncVisibleApplications()
   });
   game.settings.register(MODULE_ID, "playerCombatId", {
     name: "Selected Doom encounter (local)",

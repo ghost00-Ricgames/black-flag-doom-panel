@@ -1,16 +1,14 @@
-# v2.0.0-dev.3 — Player encounter selection fix
+# v2.0.0-dev.4: Monster Vault defaults + optional Expanded Doom
 
-Milestone 2 live report: combat banks remain separate, but the player overlay unexpectedly followed the GM's viewed encounter.
+* Default rules: Monster Vault p.13. Summed hostile encounter CR maps to 1/2/3/4/5/6 Doom for CR 0-4 / 5-8 / 9-12 / 13-16 / 17-20 / 21+.
+* Normal Doom spending (1 each): creature attack advantage; PC save disadvantage; limited-use feature refresh once per encounter.
+* Expanded Doom is OFF by default. GM can enable in world Module Settings.
+* Expanded (GMG pp.72-73) before-encounter qualifying events: +1 each; overall bonus capped at baseline, total not more than 2x baseline.
+* Expanded during encounter: +1 previously expended Doom for creature attack/save fail by 5+, suffering crit, taking massive damage. Never increase without expended balance.
+* Extra spend options (1 each): automatic creature save once per encounter; automatic creature attack once per encounter; movement up to half speed avoiding opportunity attacks at end of another creature's turn.
+* Manual add, direct number corrections and custom spend remain. Only actual spend actions increase expended balance.
+* All rules events are GM button actions, not chat automation.
+* Hostile token disposition preferred to exclude allied NPCs. If disposition unavailable, fallback to NPC ownership heuristic.
+* Existing dev.2/dev.3 combat banks convert in place; prior spent history cannot be reconstructed. Start fresh combats to test baseline/limited-use tracking.
 
-Fix:
-- GM panel and overlay continue to follow the GM's viewed encounter.
-- Players now resolve Doom from an independent locally selected combat, never the GM's viewed encounter.
-- Player overlays show an encounter selector only when multiple started combats are visible on the player's current scene.
-- Selected combat ID is stored as a client setting, with fallback to a scene-relevant encounter featuring an owned character.
-- Changing the GM tracker focus never changes a player's selected bank.
-- If a selected encounter ends, is deleted or is no longer on the viewed scene, the overlay falls back to an eligible encounter, or closes.
-- Only the selector can intercept mouse events; the decorative overlay remains click-through.
-
-Still pending: ToV rules corrections (Milestone 3), configurable audio, full live verification.
-
-Test: Start A and B on the same scene. Player selects A; GM switches to B. The player should still see A's Doom. Player selects B; the number should change to B's bank. Change scenes independently and refresh, confirming the selection persists where valid.
+Test: multiple NPC CR sum (e.g. 3+3 => CR 6 => Doom 2), all tier boundaries, single recharge use, expanded setting off/on, GMG bonus cap, recovery only after spending, save/attack once flags, browser reload and player overlay independence. Do not publish.
