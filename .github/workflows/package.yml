@@ -2,6 +2,10 @@ name: Build Foundry Release Archive
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - development/v2.0
+      - release/v2.0-rc1
   release:
     types: [published]
 
@@ -16,6 +20,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.release.tag_name || github.ref }}
+      - name: Validate JavaScript and run regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/main.mjs
+          for test_file in tests/*.mjs; do
+            node "$test_file"
+          done
       - name: Assemble Foundry module ZIP (root-level module.json)
         shell: bash
         run: |
@@ -30,7 +42,7 @@ jobs:
             lang/en.json
           unzip -Z1 dist/black-flag-doom-panel.zip | grep -qx 'module.json'
       - name: Upload test build artifact
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
         with:
           name: black-flag-doom-panel-archive
