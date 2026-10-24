@@ -1,14 +1,14 @@
 {
   "id": "black-flag-doom-panel",
   "title": "Black Flag Doom Panel (v2 Development)",
-  "description": "Development branch: Foundry V14 modernization and encounter-scoped Doom bookkeeping.",
+  "description": "Development: Foundry V14, combat-specific Doom, independent player encounter selection.",
   "authors": [
     {
       "name": "ghost00-Ricgames",
       "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
     }
   ],
-  "version": "2.0.0-dev.2",
+  "version": "2.0.0-dev.3",
   "compatibility": {
     "minimum": "14.359",
     "verified": "14"

@@ -1,13 +1,16 @@
-Milestone 2: Combat-scoped Doom. DEVELOPMENT ONLY.
+# v2.0.0-dev.3 — Player encounter selection fix
 
-Milestone 1 passed live GM/player testing. This milestone requires fresh Foundry V14 validation.
-Doom bank now persists in a per-Combat flag, with revision, current amount, active status and last-action information.
-Only Foundry's designated active GM can edit; other GMs have read-only controls. Writes are serialized.
-An unrelated combat deletion does not reset another bank. Refresh does not reset Doom or replay audio.
-Combats ending preserve an inactive bank; restarting creates a new one.
-Legacy v1 world settings remain registered but are not used. Do not upgrade a live world mid-combat.
-Old starting Doom calculation and action labels/costs remain intentionally unchanged until Milestone 3.
+Milestone 2 live report: combat banks remain separate, but the player overlay unexpectedly followed the GM's viewed encounter.
 
-TEST: Start A, adjust, refresh GM/player, start B, switch A/B, delete A while viewing B, end/restart B,
-rapid-click gain, two GM sessions, scene changes, and check audio, overlays and console logs.
-No release tag or published package is created.
+Fix:
+- GM panel and overlay continue to follow the GM's viewed encounter.
+- Players now resolve Doom from an independent locally selected combat, never the GM's viewed encounter.
+- Player overlays show an encounter selector only when multiple started combats are visible on the player's current scene.
+- Selected combat ID is stored as a client setting, with fallback to a scene-relevant encounter featuring an owned character.
+- Changing the GM tracker focus never changes a player's selected bank.
+- If a selected encounter ends, is deleted or is no longer on the viewed scene, the overlay falls back to an eligible encounter, or closes.
+- Only the selector can intercept mouse events; the decorative overlay remains click-through.
+
+Still pending: ToV rules corrections (Milestone 3), configurable audio, full live verification.
+
+Test: Start A and B on the same scene. Player selects A; GM switches to B. The player should still see A's Doom. Player selects B; the number should change to B's bank. Change scenes independently and refresh, confirming the selection persists where valid.

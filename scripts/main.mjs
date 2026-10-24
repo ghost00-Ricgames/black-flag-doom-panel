@@ -63,6 +63,41 @@ function displayedBank() {
   return bank?.active ? bank : null;
 }
 
+// A player must never inherit the GM's (potentially shared) viewed combat.
+// The local selector is stored per client, and scene filtering prevents a GM
+// working on another map from changing a player's visible Doom bank.
+function playerCombatOptions() {
+  const sceneId = globalThis.canvas?.scene?.id ?? game.scenes?.viewed?.id ?? null;
+  return [...game.combats].filter(combat => {
+    if (!combat.started || combat.visible === false || !readBank(combat)?.active) return false;
+    const link = typeof combat.scene === "string"
+      ? combat.scene
+      : (combat.scene?.id ?? combat.sceneId ?? combat._source?.scene ?? null);
+    return !sceneId || !link || link === sceneId;
+  }).sort((a, b) => a.id.localeCompare(b.id));
+}
+
+function playerOverlayCombat() {
+  const options = playerCombatOptions();
+  const pinnedId = game.settings.get(MODULE_ID, "playerCombatId");
+  const pinned = options.find(combat => combat.id === pinnedId);
+  if (pinned) return pinned;
+  // When joining a new scene, prefer an encounter containing a character
+  // controlled by this player; otherwise choose a stable first encounter.
+  return options.find(combat => [...combat.combatants].some(entry =>
+    entry.actor?.testUserPermission?.(game.user, "OWNER") === true
+  )) ?? options[0] ?? null;
+}
+
+function overlayCombat() {
+  return game.user.isGM ? displayedCombat() : playerOverlayCombat();
+}
+
+function overlayBank() {
+  const bank = readBank(overlayCombat());
+  return bank?.active ? bank : null;
+}
+
 function legacyStartingDoom(combat) {
   // Temporary v1.x parity: replaced by ToV table / encounter-CR in milestone 3.
   const adversaries = [...combat.combatants].filter(c => c.actor && !c.actor.hasPlayerOwner);
@@ -167,21 +202,26 @@ function rerenderOpen(app) {
 
 function syncVisibleApplications() {
   if (!state.initialized) return;
-  const combat = displayedCombat();
-  const bank = displayedBank();
-  const id = bank ? combat.id : null;
-  if (id !== state.displayedCombatId) state.displayedCombatId = id;
-  if (!id) {
-    if (state.panel?.rendered) void state.panel.close().catch(error => reportError("close panel", error));
-    if (state.overlay?.rendered) void state.overlay.close().catch(error => reportError("close overlay", error));
-    return;
-  }
+  const gmCombat = game.user.isGM ? displayedCombat() : null;
+  const gmBank = gmCombat ? readBank(gmCombat) : null;
   if (game.user.isGM) {
-    if (!state.panel.rendered) void state.panel.render({ force: true }).catch(error => reportError("show panel", error));
-    else rerenderOpen(state.panel);
+    if (gmBank?.active) {
+      if (!state.panel.rendered) void state.panel.render({ force: true }).catch(error => reportError("show panel", error));
+      else rerenderOpen(state.panel);
+    } else if (state.panel?.rendered) {
+      void state.panel.close().catch(error => reportError("close panel", error));
+    }
   }
-  if (!state.overlay.rendered) void state.overlay.render({ force: true }).catch(error => reportError("show overlay", error));
-  else rerenderOpen(state.overlay);
+
+  const playerCombat = overlayCombat();
+  const bank = overlayBank();
+  state.displayedCombatId = bank && playerCombat ? playerCombat.id : null;
+  if (state.displayedCombatId) {
+    if (!state.overlay.rendered) void state.overlay.render({ force: true }).catch(error => reportError("show overlay", error));
+    else rerenderOpen(state.overlay);
+  } else if (state.overlay?.rendered) {
+    void state.overlay.close().catch(error => reportError("close overlay", error));
+  }
 }
 
 function handleBankAudio(combat) {
@@ -190,7 +230,7 @@ function handleBankAudio(combat) {
   const prior = state.seenRevision.get(combat.id) ?? 0;
   if (bank.revision <= prior) return;
   state.seenRevision.set(combat.id, bank.revision);
-  if (!state.initialized || viewedCombat()?.id !== combat.id || !bank.active || !combat.started) return;
+  if (!state.initialized || overlayCombat()?.id !== combat.id || !bank.active || !combat.started) return;
   if (bank.lastAction === "start") playLocal("start");
   else if (bank.delta > 0) playLocal("gain");
   else if (bank.delta < 0) playLocal("spend");
@@ -285,7 +325,32 @@ class DoomOverlay extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    return { ...context, doom: displayedBank()?.current ?? 0 };
+    const combat = overlayCombat();
+    const choices = game.user.isGM ? [] : playerCombatOptions();
+    return {
+      ...context,
+      doom: overlayBank()?.current ?? 0,
+      showCombatSelector: !game.user.isGM && choices.length > 1,
+      combatChoices: choices.map(option => ({
+        id: option.id,
+        label: option.name || ("Encounter " + option.id.slice(0, 6)),
+        selected: option.id === combat?.id
+      }))
+    };
+  }
+
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    this.element.querySelector("#doom-combat-selector")?.addEventListener("change", async event => {
+      const id = event.currentTarget.value;
+      if (!playerCombatOptions().some(combat => combat.id === id)) return;
+      try {
+        await game.settings.set(MODULE_ID, "playerCombatId", id);
+        syncVisibleApplications();
+      } catch (error) {
+        reportError("save player encounter", error);
+      }
+    });
   }
 }
 
@@ -297,6 +362,14 @@ Hooks.once("init", () => {
   });
   game.settings.register(MODULE_ID, "activeCombat", {
     scope: "world", config: false, type: Boolean, default: false
+  });
+  game.settings.register(MODULE_ID, "playerCombatId", {
+    name: "Selected Doom encounter (local)",
+    scope: "client",
+    config: false,
+    type: String,
+    default: "",
+    onChange: () => syncVisibleApplications()
   });
   game.blackFlagDoomPanel = state;
 });
