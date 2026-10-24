@@ -1,13 +1,9 @@
-# v2.0.0-dev.7 — Audio options (Milestone 4)
+# v2.0.0-dev.7 — Milestone 4 implemented / Milestone 5 pending live test
 
-World settings: independent enable/disable and replacement audio paths for combat start, Doom gain, Doom spend; master Doom volume (0–100%).
+World settings allow individual sound toggles, custom sound files, and percent-based volume. A client setting allows each browser to mute Doom sounds.
 
-Client setting: mute Doom sounds on this browser.
+Audio uses Foundry V14 AudioHelper.play with socket=false to avoid duplication; each client reacts to combat flag updates.
 
-Preserves original sounds when paths are blank. Player and GM clients each respond to the combat flag update and play local audio, never forwarding it via sockets.
+Test plan: TEST-PLAN-v2.md. Release history: CHANGELOG.md. Updated README documents rules and sound options.
 
-Uses Foundry V14 FilePathField with AUDIO category for replacement sound inputs and NumberField with slider range for volume; path controls require live UI check.
-
-**Pending:** live Windows and Node.js player/GM audio verification. No production release, merge or tag.
-
-**Regression:** audio toggles, custom paths, original fallback, volume, client mute, connected-player synchronization, refresh silence, player encounter isolation, ToV baseline and GMG spending.
+Milestone 4 mock regression checks have passed. **Do not tag, release or merge** until verified in a real Foundry V14 GM + player test setup and approved.

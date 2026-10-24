@@ -19,6 +19,10 @@ class MockApplication {
   async _onRender() {}
 }
 globalThis.foundry = {
+  data: { fields: {
+    FilePathField: class { constructor(options) { this.options = options; } },
+    NumberField: class { constructor(options) { this.options = options; } }
+  } },
   applications: {
     api: { ApplicationV2: MockApplication, HandlebarsApplicationMixin: Type => Type }
   },

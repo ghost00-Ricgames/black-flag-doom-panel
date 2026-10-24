@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 
 const html = readFileSync(new URL("../templates/doom-panel.html", import.meta.url), "utf8");
 const manifest = JSON.parse(readFileSync(new URL("../module.json", import.meta.url), "utf8"));
-assert.equal(manifest.version, "2.0.0-dev.5");
+assert.match(manifest.version, /^2\.0\.0-dev\./);
 assert.ok(manifest.styles.includes("styles/compact-panel.css"));
 assert.ok(html.includes('id="doom-expanded-details"'));
 assert.ok(html.includes("{{#if expanded}}"));
@@ -45,6 +45,10 @@ class MockApp {
 }
 
 globalThis.foundry = {
+  data: { fields: {
+    FilePathField: class { constructor(options) { this.options = options; } },
+    NumberField: class { constructor(options) { this.options = options; } }
+  } },
   applications: { api: { ApplicationV2: MockApp, HandlebarsApplicationMixin: Type => Type } },
   audio: { AudioHelper: { play() {} } }
 };
