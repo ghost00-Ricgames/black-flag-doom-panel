@@ -40,9 +40,11 @@ jobs:
             styles/style.css styles/app-v2-overlay.css \
             styles/milestone2.css styles/milestone3.css styles/compact-panel.css \
             lang/en.json LICENSE THIRD-PARTY-NOTICES.md
+          unzip -t dist/black-flag-doom-panel.zip
           for required in module.json LICENSE THIRD-PARTY-NOTICES.md; do
             unzip -Z1 dist/black-flag-doom-panel.zip | grep -qx "$required"
           done
+          test "$(unzip -Z1 dist/black-flag-doom-panel.zip | wc -l)" -ge 12
       - name: Upload test build artifact
         if: github.event_name != 'release'
         uses: actions/upload-artifact@v4

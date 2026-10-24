@@ -8,7 +8,7 @@ const languages = JSON.parse(readFileSync(new URL("../lang/en.json", import.meta
 const stylesheet = readFileSync(new URL("../styles/compact-panel.css", import.meta.url), "utf8");
 const manifest = JSON.parse(readFileSync(new URL("../module.json", import.meta.url), "utf8"));
 
-assert.match(manifest.version, /^2\.0\.0-(?:dev|rc)\./);
+assert.match(manifest.version, /^2\.0\.0(?:-(?:dev|rc)\.\d+)?$/, "allow stable 2.0.0 and prereleases");
 const keys = [
   "ManualAdd", "CustomSpend", "AttackAdvantage", "SaveDisadvantage", "Recharge",
   "Trap", "Warning", "LongRest", "FailedRoll", "CriticalHit", "MassiveDamage",

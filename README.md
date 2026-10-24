@@ -40,6 +40,16 @@ In Foundry Setup → Add-on Modules → Install Module, paste the URL above. **U
 
 v1.x and v2.x share the same module ID and cannot coexist in one Foundry user-data directory.
 
+## GitHub-based updating
+
+The official Foundry directory publication workflow has been removed. **Automatic update detection still works through the module's manifest URL**, without calling the Foundry publishing API. Once v2.0.0 is approved and released, the production manifest stays at:
+
+`https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json`
+
+The published production manifest's `download` field must point to the versioned GitHub Release ZIP. Users of the existing v1.0.2 module already using the main-branch manifest can use Foundry's **Check Update / Update All** controls when v2.0.0 is available.
+
+**Important for testers:** This release candidate has a separate `release/v2.0-rc1` manifest for testing. It does not automatically switch to the stable `main` URL; reinstall from the production manifest for future stable updates.
+
 ## Compatibility and migration
 
 - Foundry minimum 14.359; tested only with Black Flag 3.x (system dependency minimum 3.0.079).
