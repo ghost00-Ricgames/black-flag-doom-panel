@@ -1,23 +1,43 @@
-name: Create Release Asset
+name: Build Foundry Release Archive
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  package:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Create Module Zip
-        run: |
-          zip -r black-flag-doom-panel.zip . -x ".git/*" ".github/*" "README.md" "LICENSE"
-
-      - name: Upload Zip to Release
-        uses: softprops/action-gh-release@v1
+      - name: Checkout release source
+        uses: actions/checkout@v4
         with:
-          files: black-flag-doom-panel.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.release.tag_name || github.ref }}
+      - name: Assemble Foundry module ZIP (root-level module.json)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f module.json
+          mkdir -p dist
+          zip -q -r dist/black-flag-doom-panel.zip \
+            module.json scripts/main.mjs \
+            templates/doom-panel.html templates/doom-overlay.html \
+            styles/style.css styles/app-v2-overlay.css \
+            styles/milestone2.css styles/milestone3.css styles/compact-panel.css \
+            lang/en.json
+          unzip -Z1 dist/black-flag-doom-panel.zip | grep -qx 'module.json'
+      - name: Upload test build artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: black-flag-doom-panel-archive
+          path: dist/black-flag-doom-panel.zip
+      - name: Attach to approved GitHub release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/black-flag-doom-panel.zip
+          fail_on_unmatched_files: true

@@ -1,14 +1,14 @@
 {
   "id": "black-flag-doom-panel",
-  "title": "Black Flag Doom Panel (v2 Development)",
-  "description": "Development: Foundry V14 Doom Panel with configurable combat-start, gain, and spend sounds.",
+  "title": "Black Flag Doom Panel",
+  "description": "Doom Bank tracking for Tales of the Valiant: Monster Vault defaults, optional Expanded Doom, compact GM controls, and player overlay.",
   "authors": [
     {
       "name": "ghost00-Ricgames",
       "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
     }
   ],
-  "version": "2.0.0-dev.7",
+  "version": "2.0.0-rc.1",
   "compatibility": {
     "minimum": "14.359",
     "verified": "14"
@@ -43,5 +43,6 @@
   ],
   "packs": [],
   "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel",
-  "manifest": "https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/development/v2.0/module.json"
+  "manifest": "https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/release/v2.0-rc1/module.json",
+  "download": "https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/release/v2.0-rc1/builds/black-flag-doom-panel-v2.0.0-rc.1.zip"
 }

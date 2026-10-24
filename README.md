@@ -1,50 +1,58 @@
-# Black Flag Doom Panel — v2 development
+# Black Flag Doom Panel
 
-GM Doom-tracking panel and player overlay for the **Tales of the Valiant / Black Flag** game system in **Foundry V14**.
+Doom Bank tracking for **Tales of the Valiant / Black Flag** on **Foundry V14**.
 
-> **Development branch only.** The stable published v1.0.2 remains on `main`. Do not install this development branch on a live campaign without backing up your world.
+> **Release candidate v2.0.0-rc.1 — not published.** This branch is available only for manual testing. Production v1.0.2 remains on `main`.
 
-## What v2 adds
+## Features
 
-- **Monster Vault Doom is the default.** Initial Doom comes from the combined CR of hostile encounter creatures (CR 0–4 → 1, 5–8 → 2, 9–12 → 3, 13–16 → 4, 17–20 → 5, 21+ → 6).
-- **Expanded Doom (Game Master's Guide) is optional**, off by default. Enable it under **Game Settings → Configure Settings → Module Settings → Black Flag Doom Panel** for qualifying pre-encounter bonuses, recovery of expended Doom, and additional spending.
-- A compact GM panel with descriptions when hovering over spending and recovery actions. Used once-per-encounter buttons are disabled for the rest of that encounter.
-- Independent Doom banks saved on each Combat document. Player overlays remain synchronized to the encounter chosen in their own browser, even when the GM switches encounters.
-- V14 ApplicationV2 compatibility and deterministic GM authority for editing.
-- Configurable start/gain/spend audio per event, replacement files, volume control, and individual browser mute.
+- **Monster Vault Doom by default.** Adds the encounter CRs of hostile creatures to establish starting Doom: total CR 0–4: 1; 5–8: 2; 9–12: 3; 13–16: 4; 17–20: 5; 21+: 6.
+- **Optional Expanded Doom** from the Game Master's Guide, **off by default**: qualifying precombat additions (maximum initial Doom twice the normal bank), recovery of previously spent Doom, and additional spending options.
+- **Compact GM panel:** one-click spends, manual override, a collapsible GMG section, and explanatory hover popups. Once-per-encounter actions become unavailable after use.
+- **Player-facing Doom overlay:** keeps the bank visible and synchronized. When more than one eligible combat is running, players can choose the encounter their overlay follows.
+- **Combat-scoped Doom:** each encounter keeps a separate, persistent bank; only the currently active GM may modify its state.
+- **Audio options:** individual start/gain/spend sound controls, replacement audio paths, master volume, and local mute.
 
-## Sound settings (development build)
+## Sound configuration
 
-Under **Game Settings → Configure Settings → Module Settings → Black Flag Doom Panel**, set:
-- **Combat start sound**, **Doom gain sound**, **Doom spend sound**: enabled by default, individually switchable.
-- **Combat start custom audio**, **Doom gain custom audio**, **Doom spend custom audio**: choose an audio file in Foundry's user data using the path picker, or enter the file path. **Blank restores the original sound** (start `sounds/drums.wav`, gain `sounds/lock.wav`, spend `sounds/dice.wav`).
-- **Doom sound volume (%)**: from 0 to 100, default 100 (preserves original relative volumes).
-- **Mute Doom sounds on this browser**: optional client setting for players or GM; does not silence other browsers.
+Open **Game Settings → Configure Settings → Module Settings → Black Flag Doom Panel**.
 
-The Doom total and audio events are synchronized through combat document updates, not by rebroadcasting the audio across the socket. Each browser plays the selected sound once when its displayed encounter's Doom changes. The module does not automatically apply advantage, saving throws, or other mechanical effects.
+- Combat start, Doom gain and Doom spend sounds are individually enabled by default.
+- Set a custom audio file for each event using Foundry's file picker. Leave its path blank to retain the built-in file (`sounds/drums.wav`, `sounds/lock.wav`, `sounds/dice.wav`).
+- The Doom volume setting ranges from 0–100%, with 100% preserving existing built-in relative levels.
+- `Mute Doom sounds on this browser` is a client preference. It does not change audio for other participants.
 
-## Manual test installation
+Audio is triggered locally when a client observes a combat state update; it is not rebroadcast by each client to other users.
 
-1. Stop Foundry and back up existing module data.
-2. Unzip the supplied `v2.0.0-dev.7` test archive under your Foundry User Data `Data/modules` directory.
-3. Confirm that the file is at `Data/modules/black-flag-doom-panel/module.json`.
-4. Restart Foundry, enable the module in a **disposable** Black Flag test world, then run the regression checklist in `TEST-PLAN-v2.md`.
+## Game mechanics
 
-Only install one version at a time in a particular Foundry user-data directory because v1 and v2 share the module ID.
+Spend Doom from the Monster Vault actions for creature attack advantage, PC saving throw disadvantage, or one limited-use feature refresh (once per encounter). With Expanded Doom enabled, the GM can manually record qualifying pre-encounter additions and regain expended points, and spend on automatic successes or half-speed movement without opportunity attacks. Hover over each button for the complete explanation.
 
-## Compatibility and limitations
+The module is a **tracker**, not an automated attack/save modifier. It does not roll dice or enforce timing beyond the tracked once-per-encounter limits.
 
-- Manifest minimum: Foundry 14.359; Black Flag system 3.0.079.
-- Prior v1.x world-level Doom settings are registered for compatibility but are not used by v2. Finish any in-progress combat before upgrading a live world.
-- Encounter's Doom CR depends on hostile disposition; misclassified tokens and creatures without proper CR data may require GM corrections.
-- The GMG rule-trigger buttons are manually activated by the GM; there is no chat-roll automation.
-- If more than one eligible combat is running, each player can choose their overlay encounter.
-- Live verification for v2.0.0-dev.7 is pending.
+## Install this release candidate
 
-## Project
+This RC branch provides an installable manifest for testing:
 
-Source: [ghost00-Ricgames/black-flag-doom-panel](https://github.com/ghost00-Ricgames/black-flag-doom-panel)
+`https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/release/v2.0-rc1/module.json`
 
-Issue: [#1 — Sound effect options](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/1)
+In Foundry Setup → Add-on Modules → Install Module, paste the URL above. **Use a disposable V14 user-data directory/world.** Alternatively, download the ZIP and extract it into `Data/modules/black-flag-doom-panel`, ensuring `module.json` is directly in that folder.
 
-License: MIT.
+v1.x and v2.x share the same module ID and cannot coexist in one Foundry user-data directory.
+
+## Compatibility and migration
+
+- Foundry minimum 14.359; tested only with Black Flag 3.x (system dependency minimum 3.0.079).
+- **Finish combat before upgrading an existing world.** v1 stored Doom in a world-level setting; v2 stores independent Doom state on each Combat document and does not automatically transfer an in-progress v1 bank.
+- Hostile disposition determines the encounter CR; check token disposition and CR data before combat begins.
+- Additional GMG events are applied by pressing the matching buttons, not by observing chat messages automatically.
+- Sound requires browser playback permissions and valid file paths for replacements.
+
+## Release status
+
+- Release candidate preparation is documented in [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
+- Regression cases: [TEST-PLAN-v2.md](TEST-PLAN-v2.md).
+- History: [CHANGELOG.md](CHANGELOG.md).
+- Outstanding user request: [#1 (audio preferences)](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/1) — implemented in RC, to be closed only following publication.
+
+License: MIT. The published v1.0.2 remains available until a v2.0.0 release is explicitly authorized.

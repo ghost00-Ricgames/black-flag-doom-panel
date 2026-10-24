@@ -1,4 +1,8 @@
-# Changelog (development)
+# Changelog
+
+## 2.0.0-rc.1 — Release candidate (not published)
+- Incorporates all v2.0 development milestones and completed sound settings.
+- Release packaging and publication workflow safety fixes; no gameplay changes after dev.7.
 
 ## 2.0.0-dev.7 — Milestone 4: Sound preferences
 - Individually toggle combat-start, Doom-gain and Doom-spend sounds.

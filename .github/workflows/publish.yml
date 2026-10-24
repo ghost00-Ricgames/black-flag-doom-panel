@@ -1,27 +1,61 @@
-name: Update Foundry Package
+name: Register Foundry Package Version (manual only)
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing published release tag, e.g. v2.0.0'
+        required: true
+        type: string
+      dry_run:
+        description: 'Validate with Foundry without publishing'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
 
 jobs:
-  publish:
+  register:
     runs-on: ubuntu-latest
     steps:
-      - name: Update Foundry Website
+      - name: Validate release and manifest
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        shell: bash
         run: |
-          curl -X POST "https://api.foundryvtt.com/_api/packages/release_version/" \
-          -H "Content-Type: application/json" \
-          -H "Authorization: ${{ secrets.FOUNDRY_API_KEY }}" \
-          -d '{
-            "id": "black-flag-doom-panel",
-            "release": {
-              "version": "1.0.2",
-              "manifest": "https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json",
-              "notes": "https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/tag/1.0.2",
-              "compatibility": {
-                "minimum": "13",
-                "verified": "13"
-              }
-            }
-          }'
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Stable vX.Y.Z tag required'; exit 1; }
+          VERSION="${RELEASE_TAG#v}"
+          MANIFEST="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${RELEASE_TAG}/module.json"
+          curl --fail --show-error --silent --location "$MANIFEST" -o "$RUNNER_TEMP/manifest.json"
+          jq --arg version "$VERSION" --arg tag "$RELEASE_TAG" -e \
+            '.id == "black-flag-doom-panel" and .version == $version and (.download | contains($tag))' \
+            "$RUNNER_TEMP/manifest.json"
+          curl --fail --show-error --silent --head --location \
+            "$(jq -r '.download' "$RUNNER_TEMP/manifest.json")" >/dev/null
+      - name: Validate or publish on Foundry directory
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FOUNDRY_API_KEY: ${{ secrets.FOUNDRY_API_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "${FOUNDRY_API_KEY:-}" || { echo 'FOUNDRY_API_KEY is not configured'; exit 1; }
+          VERSION="${RELEASE_TAG#v}"
+          MANIFEST="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${RELEASE_TAG}/module.json"
+          NOTES="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG}"
+          jq -n --arg version "$VERSION" --arg manifest "$MANIFEST" --arg notes "$NOTES" \
+            --argjson dry "$DRY_RUN" '{
+              id: "black-flag-doom-panel", "dry-run": $dry,
+              release: { version: $version, manifest: $manifest, notes: $notes,
+                         compatibility: {minimum: "14.359", verified: "14"} }
+            }' > "$RUNNER_TEMP/payload.json"
+          curl --fail --show-error --silent --location --request POST \
+            'https://foundryvtt.com/_api/packages/release_version/' \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: ${FOUNDRY_API_KEY}" \
+            --data-binary "@$RUNNER_TEMP/payload.json"
+          echo
