@@ -8,13 +8,13 @@
     <div class="doom-compact-bank">
         <div class="doom-compact-counter">
             <label for="manual-doom-input">DOOM BANK</label>
-            <input type="number" id="manual-doom-input" min="0" step="1" value="{{doom}}" title="Manually correct the Doom total" {{#unless canEdit}}disabled{{/unless}}>
+            <input type="number" id="manual-doom-input" min="0" step="1" value="{{doom}}" data-tooltip="BFDP.Tooltips.Override" data-tooltip-class="bfdp-doom-help" {{#unless canEdit}}disabled{{/unless}}>
         </div>
         <div class="doom-compact-manual">
-            <button type="button" data-action="gainDoom" title="Manually add one Doom" {{#unless canEdit}}disabled{{/unless}}><i class="fas fa-plus"></i> Add 1</button>
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.ManualAdd" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.ManualAdd'}}" type="button" data-action="gainDoom" {{#unless canEdit}}disabled{{/unless}}><i class="fas fa-plus"></i> Add 1</button></span>
             <div class="doom-compact-custom">
-                <input type="number" id="custom-spend-val" value="1" min="1" step="1" aria-label="Custom Doom spending amount" title="Custom number of Doom to spend" {{#unless canEdit}}disabled{{/unless}}>
-                <button type="button" data-action="spendDoom" class="custom-btn" title="Spend custom Doom amount" {{#unless canEdit}}disabled{{/unless}}>Spend</button>
+                <input type="number" id="custom-spend-val" value="1" min="1" step="1" aria-label="Custom Doom spending amount" data-tooltip="BFDP.Tooltips.CustomAmount" data-tooltip-class="bfdp-doom-help" {{#unless canEdit}}disabled{{/unless}}>
+                <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.CustomSpend" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.CustomSpend'}}" type="button" data-action="spendDoom" class="custom-btn" {{#unless canEdit}}disabled{{/unless}}>Spend</button></span>
             </div>
         </div>
     </div>
@@ -23,9 +23,9 @@
     <div class="doom-compact-section">
         <h3>Monster Vault <span>Spend 1 Doom</span></h3>
         <div class="doom-compact-grid">
-            <button type="button" data-action="spendDoom" data-spend="advantage" title="Give a creature advantage on an attack roll; costs 1 Doom." aria-label="Creature attack advantage, spend 1 Doom" {{#unless canEdit}}disabled{{/unless}}>Attack ADV</button>
-            <button type="button" data-action="spendDoom" data-spend="disadvantage" title="Impose disadvantage on a PC saving throw; costs 1 Doom." aria-label="PC saving throw disadvantage, spend 1 Doom" {{#unless canEdit}}disabled{{/unless}}>PC Save DIS</button>
-            <button type="button" data-action="spendDoom" data-spend="recharge" title="Refresh or gain one additional use of a creature's limited-use feature. Once per encounter; costs 1 Doom." aria-label="Recharge limited-use feature, once per encounter, spend 1 Doom" {{#if usedRecharge}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Recharge{{#if usedRecharge}} ✓{{/if}}</button>
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.AttackAdvantage" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.AttackAdvantage'}}" type="button" data-action="spendDoom" data-spend="advantage" {{#unless canEdit}}disabled{{/unless}}>Attack ADV</button></span>
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.SaveDisadvantage" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.SaveDisadvantage'}}" type="button" data-action="spendDoom" data-spend="disadvantage" {{#unless canEdit}}disabled{{/unless}}>PC Save DIS</button></span>
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.Recharge" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.Recharge'}}" type="button" data-action="spendDoom" data-spend="recharge" {{#if usedRecharge}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Recharge{{#if usedRecharge}} ✓{{/if}}</button></span>
         </div>
     </div>
 
@@ -39,25 +39,25 @@
             <div class="doom-compact-section">
                 <h3>Before Combat <span>+{{startingBonus}} / {{startingDoom}} bonus</span></h3>
                 <div class="doom-compact-grid">
-                    <button type="button" data-action="preBonus" data-trigger="trap" title="A PC fails a trap-disarming check by 5 or more: +1 starting Doom (maximum 2× base)." {{#unless canEdit}}disabled{{/unless}}>Trap −5</button>
-                    <button type="button" data-action="preBonus" data-trigger="warning" title="An enemy's ally escapes to warn them: +1 starting Doom (maximum 2× base)." {{#unless canEdit}}disabled{{/unless}}>Warns Foes</button>
-                    <button type="button" data-action="preBonus" data-trigger="rest" title="The party knowingly takes a long rest in a time-sensitive situation: +1 starting Doom (maximum 2× base)." {{#unless canEdit}}disabled{{/unless}}>Late Rest</button>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.Trap" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.Trap'}}" type="button" data-action="preBonus" data-trigger="trap" {{#unless canEdit}}disabled{{/unless}}>Trap −5</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.Warning" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.Warning'}}" type="button" data-action="preBonus" data-trigger="warning" {{#unless canEdit}}disabled{{/unless}}>Warns Foes</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.LongRest" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.LongRest'}}" type="button" data-action="preBonus" data-trigger="rest" {{#unless canEdit}}disabled{{/unless}}>Late Rest</button></span>
                 </div>
             </div>
             <div class="doom-compact-section">
                 <h3>Recover Spent Doom <span>{{spent}} available · +1</span></h3>
                 <div class="doom-compact-grid">
-                    <button type="button" data-action="recoverDoom" data-trigger="miss5" title="Creature fails an attack roll or saving throw by 5 or more. Regain 1 previously spent Doom." {{#unless canEdit}}disabled{{/unless}}>Fail by 5+</button>
-                    <button type="button" data-action="recoverDoom" data-trigger="critical" title="Creature suffers a critical hit. Regain 1 previously spent Doom." {{#unless canEdit}}disabled{{/unless}}>Takes Crit</button>
-                    <button type="button" data-action="recoverDoom" data-trigger="massive" title="Creature takes massive damage. Regain 1 previously spent Doom." {{#unless canEdit}}disabled{{/unless}}>Massive Dmg</button>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.FailedRoll" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.FailedRoll'}}" type="button" data-action="recoverDoom" data-trigger="miss5" {{#unless canEdit}}disabled{{/unless}}>Fail by 5+</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.CriticalHit" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.CriticalHit'}}" type="button" data-action="recoverDoom" data-trigger="critical" {{#unless canEdit}}disabled{{/unless}}>Takes Crit</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.MassiveDamage" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.MassiveDamage'}}" type="button" data-action="recoverDoom" data-trigger="massive" {{#unless canEdit}}disabled{{/unless}}>Massive Dmg</button></span>
                 </div>
             </div>
             <div class="doom-compact-section">
                 <h3>Extra Spending <span>1 Doom each</span></h3>
                 <div class="doom-compact-grid">
-                    <button type="button" data-action="spendDoom" data-spend="autoSave" title="A creature automatically succeeds on a saving throw instead of rolling. Once per encounter; costs 1 Doom." {{#if usedAutoSave}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Save{{#if usedAutoSave}} ✓{{/if}}</button>
-                    <button type="button" data-action="spendDoom" data-spend="autoAttack" title="A creature automatically succeeds on an attack instead of rolling. Once per encounter; costs 1 Doom." {{#if usedAutoAttack}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Hit{{#if usedAutoAttack}} ✓{{/if}}</button>
-                    <button type="button" data-action="spendDoom" data-spend="movement" title="At the end of another creature's turn, a creature moves up to half its speed without provoking opportunity attacks; costs 1 Doom." {{#unless canEdit}}disabled{{/unless}}>Free Move</button>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.AutomaticSave" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.AutomaticSave'}}" type="button" data-action="spendDoom" data-spend="autoSave" {{#if usedAutoSave}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Save{{#if usedAutoSave}} ✓{{/if}}</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.AutomaticAttack" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.AutomaticAttack'}}" type="button" data-action="spendDoom" data-spend="autoAttack" {{#if usedAutoAttack}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Hit{{#if usedAutoAttack}} ✓{{/if}}</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.FreeMove" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.FreeMove'}}" type="button" data-action="spendDoom" data-spend="movement" {{#unless canEdit}}disabled{{/unless}}>Free Move</button></span>
                 </div>
             </div>
         </div>

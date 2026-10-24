@@ -5,12 +5,10 @@
   "BFDP.StartingDoom": "Initial Bank",
   "BFDP.CurrentDoom": "Current Doom",
   "BFDP.OverrideTooltip": "Unlock to manually edit Doom value",
-  
   "BFDP.GenerateHeader": "Generate Doom",
   "BFDP.GainPC1": "PC Natural 1",
   "BFDP.GainNPC20": "NPC Natural 20",
   "BFDP.GainManual": "Manual +1",
-
   "BFDP.SpendHeader": "Spend Doom",
   "BFDP.SpendAdv": "Advantage (1)",
   "BFDP.SpendDis": "Disadvantage (1)",
@@ -18,8 +16,27 @@
   "BFDP.SpendRecharge": "Recharge (3)",
   "BFDP.SpendCustom": "Custom Spend",
   "BFDP.SpendBtn": "Spend",
-
   "BFDP.OverlayLabel": "DOOM",
   "BFDP.CombatEndConfirm": "Combat ended. Should the Doom Panel and Player Overlay be closed?",
-  "BFDP.NoCombatants": "No adversaries detected in combat tracker."
+  "BFDP.NoCombatants": "No adversaries detected in combat tracker.",
+  "BFDP": {
+    "Tooltips": {
+      "ManualAdd": "Manual GM adjustment. Add 1 Doom to this encounter's current bank. This is not an Expanded Doom recovery trigger; use it when you intentionally want to correct or adjust the total.",
+      "CustomSpend": "Custom Doom spending. Enter the amount in the box to the left and click Spend. The points leave the current bank and count as expended Doom for the optional Expanded Doom recovery rule.",
+      "AttackAdvantage": "Monster Vault · Spend 1 Doom. Give a creature advantage on one attack roll: roll two d20s and use the higher result. The module records the Doom cost; it does not modify the attack roll automatically.",
+      "SaveDisadvantage": "Monster Vault · Spend 1 Doom. Impose disadvantage on a player character's saving throw: the PC rolls two d20s and uses the lower result. The module records the Doom cost; it does not roll the save.",
+      "Recharge": "Monster Vault · Spend 1 Doom; once per encounter. Refresh, recharge, or gain one additional use of a creature's limited-use feature. Examples include a dragon's Breath Weapon, a Legendary Resistance, or a spell.",
+      "Trap": "Game Master's Guide · Before an encounter, if the PCs fail a check to disarm a trap by 5 or more, add 1 starting Doom. All pre-encounter bonuses together may at most double the normal starting Doom.",
+      "Warning": "Game Master's Guide · Before an encounter, if the PCs allow an ally of an encounter creature to escape and warn that creature, add 1 starting Doom. Pre-encounter bonuses cannot exceed double the normal starting Doom.",
+      "LongRest": "Game Master's Guide · Before an encounter, if the PCs knowingly finish a long rest despite time being critical and consciously choose that rest, add 1 starting Doom, subject to the double-starting-Doom cap.",
+      "FailedRoll": "Game Master's Guide · During an encounter, if a creature in that encounter fails an attack roll or a saving throw by 5 or more, regain 1 previously expended Doom. A natural 1 alone does not necessarily qualify.",
+      "CriticalHit": "Game Master's Guide · During an encounter, if a creature in that encounter suffers a critical hit, regain 1 previously expended Doom. This cannot create Doom when none has been expended.",
+      "MassiveDamage": "Game Master's Guide · During an encounter, if a creature in that encounter takes massive damage, regain 1 previously expended Doom. This cannot create Doom when none has been expended.",
+      "AutomaticSave": "Game Master's Guide · Spend 1 Doom; once per encounter. A creature automatically succeeds on a saving throw in place of rolling. Declare it before the roll.",
+      "AutomaticAttack": "Game Master's Guide · Spend 1 Doom; once per encounter. A creature automatically succeeds on an attack in place of rolling. Declare it before the roll.",
+      "FreeMove": "Game Master's Guide · Spend 1 Doom. At the end of another creature's turn, one creature can move up to half its speed without provoking opportunity attacks. May be used again if Doom remains.",
+      "Override": "Direct GM correction. Change the bank to the exact non-negative whole number you enter. This is a manual adjustment, not a spending event and not a recovery of expended Doom.",
+      "CustomAmount": "Custom spend amount. Set the number of Doom you want to spend using the adjacent Spend button. The bank must have enough Doom available."
+    }
+  }
 }

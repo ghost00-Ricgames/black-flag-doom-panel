@@ -51,3 +51,32 @@
 .doom-panel-compact .doom-expanded-details[open] .doom-expand-chevron { transform: rotate(180deg); }
 .doom-panel-compact .doom-expanded-body { display: flex; flex-direction: column; gap: 9px; border-top: 1px solid #713333; padding: 10px 8px; }
 .doom-panel-compact button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Foundry V14 native tooltip anchors. Wrappers receive hover on disabled
+   one-use buttons (a disabled button itself may not dispatch pointer events). */
+.doom-panel-compact .doom-tip-target {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+}
+.doom-panel-compact .doom-tip-target > button {
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.doom-panel-compact .doom-tip-target > button:disabled {
+    pointer-events: none;
+}
+.doom-panel-compact .doom-compact-manual > .doom-tip-target > button {
+    min-height: 28px;
+}
+/* TooltipManager places its tooltip at document level, not inside the panel. */
+#tooltip.bfdp-doom-help {
+    max-width: min(350px, calc(100vw - 32px));
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.45;
+    padding: 10px 12px;
+    font-size: 12px;
+    text-align: left;
+}

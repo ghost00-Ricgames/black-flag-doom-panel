@@ -1,14 +1,14 @@
 {
   "id": "black-flag-doom-panel",
   "title": "Black Flag Doom Panel (v2 Development)",
-  "description": "Development: compact GM Doom Panel with optional collapsible Expanded Doom controls.",
+  "description": "Development: compact GM panel with Foundry V14 rule-explanation hover tooltips.",
   "authors": [
     {
       "name": "ghost00-Ricgames",
       "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
     }
   ],
-  "version": "2.0.0-dev.5",
+  "version": "2.0.0-dev.6",
   "compatibility": {
     "minimum": "14.359",
     "verified": "14"
