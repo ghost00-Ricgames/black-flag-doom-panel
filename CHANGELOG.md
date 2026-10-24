@@ -1,6 +1,11 @@
 # Changelog
 
-## 2.0.0-rc.1 — Release candidate (not published)
+## 2.0.0 — Foundry V14 update
+- Stable release through GitHub manifests, independent of Foundry's official listing.
+- Monster Vault Doom rules, optional Expanded Doom, compact GM controls, hover explanations, per-combat persistence, player encounter selection, and configurable sound.
+- Includes BFRD attribution and independent GMG tooltip wording.
+
+## 2.0.0-rc.1 — Release candidate
 - Add Kobold Press BFRD attribution (CC BY 4.0), separate from MIT code license.
 - Include LICENSE and THIRD-PARTY-NOTICES.md in distributable ZIP.
 - Rewrite nine optional GMG tooltip explanations to avoid dependence on guide prose.

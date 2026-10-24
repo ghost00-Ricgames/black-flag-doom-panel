@@ -6,6 +6,7 @@ on:
     branches:
       - development/v2.0
       - release/v2.0-rc1
+      - main
   release:
     types: [published]
 
@@ -51,6 +52,28 @@ jobs:
         with:
           name: black-flag-doom-panel-archive
           path: dist/black-flag-doom-panel.zip
+      - name: Publish stable GitHub release from main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r '.version' module.json)"
+          test "$VERSION" = '2.0.0' || { echo 'This one-time production publication gate is for 2.0.0 only'; exit 1; }
+          test "$(jq -r '.manifest' module.json)" = 'https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json'
+          test "$(jq -r '.download' module.json)" = 'https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/v2.0.0/black-flag-doom-panel.zip'
+          test "$(jq -r '.compatibility.minimum' module.json)" = '14.359'
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "Release v${VERSION} already exists; refusing to overwrite it"
+            exit 1
+          fi
+          gh release create "v${VERSION}" dist/black-flag-doom-panel.zip \
+            --target "$GITHUB_SHA" \
+            --title "Black Flag Doom Panel v${VERSION}" \
+            --notes-file RELEASE-NOTES-v2.0.0.md \
+            --latest
+          echo "GitHub release v${VERSION} created with installer ZIP"
       - name: Attach to approved GitHub release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2

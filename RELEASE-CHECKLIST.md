@@ -1,6 +1,6 @@
 # Black Flag Doom Panel v2.0 — Release Controls
 
-Status: **RC preparation**. There is NO live v2.0.0 GitHub Release, public tag, update to `main`, or Foundry directory publication.
+Status: **v2.0.0 GitHub publication authorized**. Foundry-directory publication remains prohibited. Verify GitHub Release artifact and manifest after publication.
 
 ## Before release
 
@@ -16,7 +16,7 @@ Status: **RC preparation**. There is NO live v2.0.0 GitHub Release, public tag, 
 - [ ] RC candidate manually installed from its manifest URL using the generated ZIP.
 - [ ] GM and players check game rules, audio, browser reload, multiple combats.
 - [ ] Secondary Node.js server / two-GM smoke test.
-- [ ] User explicitly approves publishing final v2.0.0.
+- [x] User explicitly approves publishing final v2.0.0 through GitHub.
 
 ## GitHub-only distribution and Foundry updates
 
@@ -27,7 +27,7 @@ Status: **RC preparation**. There is NO live v2.0.0 GitHub Release, public tag, 
 - **GitHub release ZIP:** `.github/workflows/package.yml` runs on a published GitHub Release and attaches `black-flag-doom-panel.zip`; it includes `module.json` at the ZIP root. Merging the RC workflow replaces the older v1 workflow.
 - Existing Foundry directory listings are independent: removing the publisher prevents new API-submitted versions but does not automatically remove an old listing.
 
-## When approved (not before)
+## Publication verification
 
 1. Compare release candidate against `main`, review and merge only after explicit user approval.
 2. Change the **production** `module.json` to version `2.0.0`, stable manifest `https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json`, and download `https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/v2.0.0/black-flag-doom-panel.zip`.
@@ -41,3 +41,10 @@ Status: **RC preparation**. There is NO live v2.0.0 GitHub Release, public tag, 
 **Archive packaging note:** The release archive is ROOT-FLAT for Foundry's manifest installer. Older dev manual-install ZIPs contained an outer folder, to copy into Data/modules by hand. Do not confuse the two formats.
 
 Rollback: retain original 1.0.2 GitHub Release and the existing main-branch commit; reverting version metadata or publishing a follow-up patch requires explicit coordination.
+
+
+## Public installation link
+
+`https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json`
+
+Public version download: `https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/v2.0.0/black-flag-doom-panel.zip`

@@ -2,7 +2,7 @@
 
 Doom Bank tracking for **Tales of the Valiant / Black Flag** on **Foundry V14**.
 
-> **Release candidate v2.0.0-rc.1 — not published.** This branch is available only for manual testing. Production v1.0.2 remains on `main`.
+**Version 2.0.0** is distributed through GitHub Releases. Compatible Foundry V14 installations can install it through the stable manifest URL below.
 
 ## Features
 
@@ -30,15 +30,15 @@ Spend Doom from the Monster Vault actions for creature attack advantage, PC savi
 
 The module is a **tracker**, not an automated attack/save modifier. It does not roll dice or enforce timing beyond the tracked once-per-encounter limits.
 
-## Install this release candidate
+## Install v2.0.0 from GitHub
 
-This RC branch provides an installable manifest for testing:
+In Foundry Setup → **Add-on Modules → Install Module**, paste the production manifest URL:
 
-`https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/release/v2.0-rc1/module.json`
+`https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json`
 
-In Foundry Setup → Add-on Modules → Install Module, paste the URL above. **Use a disposable V14 user-data directory/world.** Alternatively, download the ZIP and extract it into `Data/modules/black-flag-doom-panel`, ensuring `module.json` is directly in that folder.
+Foundry reads the manifest's `download` field and installs the matching GitHub Release ZIP. The release archive has `module.json` at its root. Alternatively, download the release asset and install it manually in `Data/modules/black-flag-doom-panel`.
 
-v1.x and v2.x share the same module ID and cannot coexist in one Foundry user-data directory.
+Back up worlds before upgrading from v1.0.2. The two versions use the same module ID and cannot be installed side by side in one Foundry data directory.
 
 ## GitHub-based updating
 
@@ -48,7 +48,7 @@ The official Foundry directory publication workflow has been removed. **Automati
 
 The published production manifest's `download` field must point to the versioned GitHub Release ZIP. Users of the existing v1.0.2 module already using the main-branch manifest can use Foundry's **Check Update / Update All** controls when v2.0.0 is available.
 
-**Important for testers:** This release candidate has a separate `release/v2.0-rc1` manifest for testing. It does not automatically switch to the stable `main` URL; reinstall from the production manifest for future stable updates.
+**Important for RC testers:** If you previously installed the temporary `release/v2.0-rc1` manifest, install the stable module from the `main/module.json` URL above so future releases are detected.
 
 ## Compatibility and migration
 
@@ -66,9 +66,9 @@ The optional *Game Master's Guide* Expanded Doom controls implement game procedu
 
 ## Release status
 
-- Release candidate preparation is documented in [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
+- Release and update verification is documented in [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
 - Regression cases: [TEST-PLAN-v2.md](TEST-PLAN-v2.md).
 - History: [CHANGELOG.md](CHANGELOG.md).
-- Outstanding user request: [#1 (audio preferences)](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/1) — implemented in RC, to be closed only following publication.
+- Outstanding user request: [#1 (audio preferences)](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/1) — delivered in v2.0.0.
 
-Original code: MIT. BFRD-derived material: CC BY 4.0 with attribution. The published v1.0.2 remains available until a v2.0.0 release is explicitly authorized.
+Original code: MIT. BFRD-derived material: CC BY 4.0 with attribution. Previous versions remain available in GitHub Releases.
