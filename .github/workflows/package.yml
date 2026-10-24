@@ -1,23 +1,82 @@
-name: Create Release Asset
+name: Build Foundry Release Archive
 
 on:
+  workflow_dispatch:
+  push:
+    branches:
+      - development/v2.0
+      - release/v2.0-rc1
+      - main
   release:
     types: [published]
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  package:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Create Module Zip
-        run: |
-          zip -r black-flag-doom-panel.zip . -x ".git/*" ".github/*" "README.md" "LICENSE"
-
-      - name: Upload Zip to Release
-        uses: softprops/action-gh-release@v1
+      - name: Checkout release source
+        uses: actions/checkout@v4
         with:
-          files: black-flag-doom-panel.zip
+          ref: ${{ github.event.release.tag_name || github.ref }}
+      - name: Validate JavaScript and run regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/main.mjs
+          for test_file in tests/*.mjs; do
+            node "$test_file"
+          done
+      - name: Assemble Foundry module ZIP (root-level module.json)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f module.json
+          mkdir -p dist
+          zip -q -r dist/black-flag-doom-panel.zip \
+            module.json scripts/main.mjs \
+            templates/doom-panel.html templates/doom-overlay.html \
+            styles/style.css styles/app-v2-overlay.css \
+            styles/milestone2.css styles/milestone3.css styles/compact-panel.css \
+            lang/en.json LICENSE THIRD-PARTY-NOTICES.md
+          unzip -t dist/black-flag-doom-panel.zip
+          for required in module.json LICENSE THIRD-PARTY-NOTICES.md; do
+            unzip -Z1 dist/black-flag-doom-panel.zip | grep -qx "$required"
+          done
+          test "$(unzip -Z1 dist/black-flag-doom-panel.zip | wc -l)" -ge 12
+      - name: Upload test build artifact
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: black-flag-doom-panel-archive
+          path: dist/black-flag-doom-panel.zip
+      - name: Publish stable GitHub release from main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r '.version' module.json)"
+          test "$VERSION" = '2.0.0' || { echo 'This one-time production publication gate is for 2.0.0 only'; exit 1; }
+          test "$(jq -r '.manifest' module.json)" = 'https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json'
+          test "$(jq -r '.download' module.json)" = 'https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/v2.0.0/black-flag-doom-panel.zip'
+          test "$(jq -r '.compatibility.minimum' module.json)" = '14.359'
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "Release v${VERSION} already exists; refusing to overwrite it"
+            exit 1
+          fi
+          gh release create "v${VERSION}" dist/black-flag-doom-panel.zip \
+            --target "$GITHUB_SHA" \
+            --title "Black Flag Doom Panel v${VERSION}" \
+            --notes-file RELEASE-NOTES-v2.0.0.md \
+            --latest
+          echo "GitHub release v${VERSION} created with installer ZIP"
+      - name: Attach to approved GitHub release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/black-flag-doom-panel.zip
+          fail_on_unmatched_files: true

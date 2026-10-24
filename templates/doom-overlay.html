@@ -1,4 +1,14 @@
 <div id="doom-overlay-player" class="doom-overlay-wrapper">
+    {{#if showCombatSelector}}
+    <div class="doom-overlay-controls">
+        <label for="doom-combat-selector">Your encounter</label>
+        <select id="doom-combat-selector" aria-label="Choose the Doom encounter to display">
+            {{#each combatChoices}}
+            <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+        </select>
+    </div>
+    {{/if}}
     <div class="doom-glass-container">
         <i class="fas fa-skull-crossbones" style="color: #ff4444; font-size: 26px;"></i>
         <div style="display: flex; flex-direction: column; align-items: center;">

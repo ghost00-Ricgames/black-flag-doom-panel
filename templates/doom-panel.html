@@ -1,49 +1,66 @@
-<div class="doom-panel-container">
-    <div class="doom-section encounter-stats">
-        <div class="stat-row">
-            <span><i class="fas fa-users-slash"></i> Adversaries:</span>
-            <span class="stat-val">{{adversaryCount}}</span>
+<div class="doom-panel-container doom-panel-compact">
+    <div class="doom-compact-stats" aria-label="Encounter statistics">
+        <span title="Number of hostile creatures">Foes <strong>{{adversaryCount}}</strong></span>
+        <span title="Combined encounter challenge rating">CR <strong>{{totalCR}}</strong></span>
+        <span title="Monster Vault starting Doom">Start <strong>{{startingDoom}}</strong></span>
+    </div>
+
+    <div class="doom-compact-bank">
+        <div class="doom-compact-counter">
+            <label for="manual-doom-input">DOOM BANK</label>
+            <input type="number" id="manual-doom-input" min="0" step="1" value="{{doom}}" data-tooltip="BFDP.Tooltips.Override" data-tooltip-class="bfdp-doom-help" {{#unless canEdit}}disabled{{/unless}}>
         </div>
-        <div class="stat-row">
-            <span><i class="fas fa-crown"></i> Max CR:</span>
-            <span class="stat-val">{{maxCR}}</span>
+        <div class="doom-compact-manual">
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.ManualAdd" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.ManualAdd'}}" type="button" data-action="gainDoom" {{#unless canEdit}}disabled{{/unless}}><i class="fas fa-plus"></i> Add 1</button></span>
+            <div class="doom-compact-custom">
+                <input type="number" id="custom-spend-val" value="1" min="1" step="1" aria-label="Custom Doom spending amount" data-tooltip="BFDP.Tooltips.CustomAmount" data-tooltip-class="bfdp-doom-help" {{#unless canEdit}}disabled{{/unless}}>
+                <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.CustomSpend" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.CustomSpend'}}" type="button" data-action="spendDoom" class="custom-btn" {{#unless canEdit}}disabled{{/unless}}>Spend</button></span>
+            </div>
+        </div>
+    </div>
+    {{#unless canEdit}}<p class="doom-readonly-note">The active GM controls Doom.</p>{{/unless}}
+
+    <div class="doom-compact-section">
+        <h3>Monster Vault <span>Spend 1 Doom</span></h3>
+        <div class="doom-compact-grid">
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.AttackAdvantage" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.AttackAdvantage'}}" type="button" data-action="spendDoom" data-spend="advantage" {{#unless canEdit}}disabled{{/unless}}>Attack ADV</button></span>
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.SaveDisadvantage" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.SaveDisadvantage'}}" type="button" data-action="spendDoom" data-spend="disadvantage" {{#unless canEdit}}disabled{{/unless}}>PC Save DIS</button></span>
+            <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.Recharge" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.Recharge'}}" type="button" data-action="spendDoom" data-spend="recharge" {{#if usedRecharge}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Recharge{{#if usedRecharge}} ✓{{/if}}</button></span>
         </div>
     </div>
 
-    <hr>
-
-    <div class="doom-section doom-bank">
-        <label>Current Doom</label>
-        <div class="doom-value-display">
-            <input type="number" id="manual-doom-input" value="{{doom}}">
+    {{#if expanded}}
+    <details class="doom-expanded-details" id="doom-expanded-details">
+        <summary>
+            <span><i class="fas fa-book-open"></i> Expanded Doom</span>
+            <span class="doom-expanded-summary-info" title="Spent Doom available to recover">Recoverable <strong>{{spent}}</strong> <i class="fas fa-chevron-down doom-expand-chevron"></i></span>
+        </summary>
+        <div class="doom-expanded-body">
+            <div class="doom-compact-section">
+                <h3>Before Combat <span>+{{startingBonus}} / {{startingDoom}} bonus</span></h3>
+                <div class="doom-compact-grid">
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.Trap" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.Trap'}}" type="button" data-action="preBonus" data-trigger="trap" {{#unless canEdit}}disabled{{/unless}}>Trap −5</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.Warning" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.Warning'}}" type="button" data-action="preBonus" data-trigger="warning" {{#unless canEdit}}disabled{{/unless}}>Warns Foes</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.LongRest" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.LongRest'}}" type="button" data-action="preBonus" data-trigger="rest" {{#unless canEdit}}disabled{{/unless}}>Late Rest</button></span>
+                </div>
+            </div>
+            <div class="doom-compact-section">
+                <h3>Recover Spent Doom <span>{{spent}} available · +1</span></h3>
+                <div class="doom-compact-grid">
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.FailedRoll" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.FailedRoll'}}" type="button" data-action="recoverDoom" data-trigger="miss5" {{#unless canEdit}}disabled{{/unless}}>Fail by 5+</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.CriticalHit" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.CriticalHit'}}" type="button" data-action="recoverDoom" data-trigger="critical" {{#unless canEdit}}disabled{{/unless}}>Takes Crit</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.MassiveDamage" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.MassiveDamage'}}" type="button" data-action="recoverDoom" data-trigger="massive" {{#unless canEdit}}disabled{{/unless}}>Massive Dmg</button></span>
+                </div>
+            </div>
+            <div class="doom-compact-section">
+                <h3>Extra Spending <span>1 Doom each</span></h3>
+                <div class="doom-compact-grid">
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.AutomaticSave" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.AutomaticSave'}}" type="button" data-action="spendDoom" data-spend="autoSave" {{#if usedAutoSave}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Save{{#if usedAutoSave}} ✓{{/if}}</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.AutomaticAttack" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.AutomaticAttack'}}" type="button" data-action="spendDoom" data-spend="autoAttack" {{#if usedAutoAttack}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Hit{{#if usedAutoAttack}} ✓{{/if}}</button></span>
+                    <span class="doom-tip-target" data-tooltip="BFDP.Tooltips.FreeMove" data-tooltip-class="bfdp-doom-help"><button aria-label="{{localize 'BFDP.Tooltips.FreeMove'}}" type="button" data-action="spendDoom" data-spend="movement" {{#unless canEdit}}disabled{{/unless}}>Free Move</button></span>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <hr>
-
-    <div class="doom-section gain-section">
-        <h3>Generate Doom</h3>
-        <div class="btn-column">
-            <button class="gain-btn" data-type="pc1"><i class="fas fa-dice-one"></i> PC Natural 1</button>
-            <button class="gain-btn" data-type="npc20"><i class="fas fa-dice-d20"></i> NPC Natural 20</button>
-            <button class="gain-btn" data-type="manual"><i class="fas fa-plus"></i> Manual +1</button>
-        </div>
-    </div>
-
-    <hr>
-
-    <div class="doom-section spend-section">
-        <h3>Spend Doom</h3>
-        <div class="btn-grid">
-            <button class="spend-btn" data-cost="1"><i class="fas fa-angle-double-up"></i> ADV (1)</button>
-            <button class="spend-btn" data-cost="1"><i class="fas fa-angle-double-down"></i> DIS (1)</button>
-            <button class="spend-btn" data-cost="2"><i class="fas fa-bolt"></i> ACT (2)</button>
-            <button class="spend-btn" data-cost="3"><i class="fas fa-sync-alt"></i> RCH (3)</button>
-        </div>
-
-        <div class="custom-spend-row">
-            <input type="number" id="custom-spend-val" value="1" min="1">
-            <button class="spend-btn custom-btn">Spend</button>
-        </div>
-    </div>
+    </details>
+    {{/if}}
 </div>

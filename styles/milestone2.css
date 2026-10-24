@@ -1,0 +1,2 @@
+.doom-readonly-note { text-align: center; color: #ffb38d; font-size: 11px; margin: 4px 0 0; }
+.doom-panel-container button:disabled { opacity: .5; cursor: not-allowed; }

@@ -5,12 +5,10 @@
   "BFDP.StartingDoom": "Initial Bank",
   "BFDP.CurrentDoom": "Current Doom",
   "BFDP.OverrideTooltip": "Unlock to manually edit Doom value",
-  
   "BFDP.GenerateHeader": "Generate Doom",
   "BFDP.GainPC1": "PC Natural 1",
   "BFDP.GainNPC20": "NPC Natural 20",
   "BFDP.GainManual": "Manual +1",
-
   "BFDP.SpendHeader": "Spend Doom",
   "BFDP.SpendAdv": "Advantage (1)",
   "BFDP.SpendDis": "Disadvantage (1)",
@@ -18,8 +16,27 @@
   "BFDP.SpendRecharge": "Recharge (3)",
   "BFDP.SpendCustom": "Custom Spend",
   "BFDP.SpendBtn": "Spend",
-
   "BFDP.OverlayLabel": "DOOM",
   "BFDP.CombatEndConfirm": "Combat ended. Should the Doom Panel and Player Overlay be closed?",
-  "BFDP.NoCombatants": "No adversaries detected in combat tracker."
+  "BFDP.NoCombatants": "No adversaries detected in combat tracker.",
+  "BFDP": {
+    "Tooltips": {
+      "ManualAdd": "Manual GM adjustment. Add 1 Doom to this encounter's current bank. This is not an Expanded Doom recovery trigger; use it when you intentionally want to correct or adjust the total.",
+      "CustomSpend": "Custom Doom spending. Enter the amount in the box to the left and click Spend. The points leave the current bank and count as expended Doom for the optional Expanded Doom recovery rule.",
+      "AttackAdvantage": "Monster Vault · Spend 1 Doom. Give a creature advantage on one attack roll: roll two d20s and use the higher result. The module records the Doom cost; it does not modify the attack roll automatically.",
+      "SaveDisadvantage": "Monster Vault · Spend 1 Doom. Impose disadvantage on a player character's saving throw: the PC rolls two d20s and uses the lower result. The module records the Doom cost; it does not roll the save.",
+      "Recharge": "Monster Vault · Spend 1 Doom; once per encounter. Refresh, recharge, or gain one additional use of a creature's limited-use feature. Examples include a dragon's Breath Weapon, a Legendary Resistance, or a spell.",
+      "Trap": "GMG optional rule. Before combat, increase initial Doom by 1 when the party tries to disable a trap but its check result misses the required number by at least five. Total precombat bonuses cannot exceed the original starting Doom.",
+      "Warning": "GMG optional rule. Before combat, gain 1 extra starting Doom if an opponent receives advance warning from an ally who managed to get away from the party. All such bonuses together are limited to the base Doom pool.",
+      "LongRest": "GMG optional rule. Before combat, add 1 starting Doom if the party deliberately takes a full long rest after being made aware that delaying this encounter carries a time cost. The total bonus cannot exceed standard starting Doom.",
+      "FailedRoll": "GMG optional rule. During combat, return 1 Doom from the spent pool when a creature participating in this battle falls at least five short of the target for an attack or saving throw. This restores expended Doom; it cannot create new points.",
+      "CriticalHit": "GMG optional rule. During combat, a critical hit against a creature participating in the fight lets the GM move 1 Doom from the expended pool back into the available bank. With no spent Doom, this event restores nothing.",
+      "MassiveDamage": "GMG optional rule. During combat, when a combatant suffers massive damage, transfer 1 Doom from the previously spent pool back to the active balance. This recovery is limited by the amount of Doom already expended.",
+      "AutomaticSave": "GMG optional rule. Spend 1 Doom to resolve a creature's saving throw as successful without rolling a die. This option can be used just once in the encounter; the tracker locks its button after use.",
+      "AutomaticAttack": "GMG optional rule. Spend 1 Doom to treat one creature's attack as successful without rolling the attack die. Only one use of this option is allowed per encounter; the tracker records that use.",
+      "FreeMove": "GMG optional rule. At the end of a different creature's turn, pay 1 Doom to move a creature up to half its speed. Opportunity attacks are not triggered by this special movement. Repeat when needed if Doom remains.",
+      "Override": "Direct GM correction. Change the bank to the exact non-negative whole number you enter. This is a manual adjustment, not a spending event and not a recovery of expended Doom.",
+      "CustomAmount": "Custom spend amount. Set the number of Doom you want to spend using the adjacent Spend button. The bank must have enough Doom available."
+    }
+  }
 }
