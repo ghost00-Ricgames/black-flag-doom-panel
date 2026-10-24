@@ -1,0 +1,53 @@
+/* Compact GM window for Monster Vault and optional Expanded Doom.
+   Readable in ~330px width; keeps the original red/black module styling. */
+.bfdp-panel-app .window-content { overflow-y: auto; max-height: calc(100vh - 125px); }
+.doom-panel-compact { gap: 8px; padding: 9px; }
+.doom-panel-compact .doom-compact-stats {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 6px; border-bottom: 1px solid #613232;
+    padding: 0 2px 7px; font-size: 11px; color: #cfc0c0;
+}
+.doom-panel-compact .doom-compact-stats strong { color: #ff7945; margin-left: 3px; font-size: 12px; }
+.doom-panel-compact .doom-compact-bank {
+    display: grid; grid-template-columns: minmax(100px, 1fr) minmax(140px, 1.5fr);
+    align-items: stretch; gap: 10px;
+}
+.doom-panel-compact .doom-compact-counter { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; }
+.doom-panel-compact .doom-compact-counter label {
+    font-size: 10px; letter-spacing: 1.5px; font-weight: 700; color: #f66;
+}
+.doom-panel-compact #manual-doom-input { width: 100%; max-width: 100px; height: 43px; font-size: 27px; }
+.doom-panel-compact .doom-compact-manual { display: grid; grid-template-rows: 1fr 1fr; gap: 5px; }
+.doom-panel-compact .doom-compact-manual > button { min-height: 28px; }
+.doom-panel-compact .doom-compact-custom { display: grid; grid-template-columns: 52px 1fr; gap: 5px; }
+.doom-panel-compact #custom-spend-val { width: 100%; min-width: 0; text-align: center; background: #000; color: #fff; border: 1px solid #555; border-radius: 3px; }
+.doom-panel-compact .doom-compact-section h3 {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 6px; text-align: left; margin: 0 0 5px;
+    color: #ff6868; font-size: 10px; letter-spacing: .65px;
+}
+.doom-panel-compact .doom-compact-section h3 span {
+    font-size: 10px; letter-spacing: 0; text-transform: none; font-weight: 500; color: #d0aaa0;
+}
+.doom-panel-compact .doom-compact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.doom-panel-compact .doom-compact-grid button {
+    min-width: 0; min-height: 34px; padding: 5px 3px;
+    line-height: 1.2; font-size: 10px; overflow-wrap: anywhere;
+}
+.doom-panel-compact .doom-expanded-details {
+    border: 1px solid #863c3c; border-radius: 5px; background: rgba(53, 14, 14, .35);
+}
+.doom-panel-compact .doom-expanded-details > summary {
+    cursor: pointer; user-select: none; list-style: none;
+    padding: 8px; display: flex; justify-content: space-between;
+    align-items: center; gap: 6px; font-size: 11px; color: #ffb5a4;
+    font-weight: 700;
+}
+.doom-panel-compact .doom-expanded-details > summary::-webkit-details-marker { display: none; }
+.doom-panel-compact .doom-expanded-details > summary:focus-visible { outline: 2px solid #ff6666; outline-offset: -2px; }
+.doom-panel-compact .doom-expanded-summary-info { font-weight: 400; color: #d7b2a7; font-size: 10px; }
+.doom-panel-compact .doom-expanded-summary-info strong { color: #fff; }
+.doom-panel-compact .doom-expand-chevron { margin-left: 5px; transition: transform .15s ease; }
+.doom-panel-compact .doom-expanded-details[open] .doom-expand-chevron { transform: rotate(180deg); }
+.doom-panel-compact .doom-expanded-body { display: flex; flex-direction: column; gap: 9px; border-top: 1px solid #713333; padding: 10px 8px; }
+.doom-panel-compact button:disabled { opacity: .4; cursor: not-allowed; }

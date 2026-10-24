@@ -1,60 +1,66 @@
-<div class="doom-panel-container">
-    <div class="doom-section encounter-stats">
-        <div class="stat-row"><span><i class="fas fa-users-slash"></i> Adversaries:</span><span class="stat-val">{{adversaryCount}}</span></div>
-        <div class="stat-row"><span><i class="fas fa-dragon"></i> Encounter CR:</span><span class="stat-val">{{totalCR}}</span></div>
-        <div class="stat-row"><span><i class="fas fa-crown"></i> Starting Doom:</span><span class="stat-val">{{startingDoom}}</span></div>
-        {{#if expanded}}<div class="stat-row"><span>Pre-encounter bonus:</span><span class="stat-val">+{{startingBonus}} / {{startingMaximum}} max total</span></div>{{/if}}
+<div class="doom-panel-container doom-panel-compact">
+    <div class="doom-compact-stats" aria-label="Encounter statistics">
+        <span title="Number of hostile creatures">Foes <strong>{{adversaryCount}}</strong></span>
+        <span title="Combined encounter challenge rating">CR <strong>{{totalCR}}</strong></span>
+        <span title="Monster Vault starting Doom">Start <strong>{{startingDoom}}</strong></span>
     </div>
-    <hr>
-    <div class="doom-section doom-bank">
-        <label for="manual-doom-input">Current Doom</label>
-        <div class="doom-value-display"><input type="number" id="manual-doom-input" min="0" step="1" value="{{doom}}" {{#unless canEdit}}disabled{{/unless}}></div>
-        {{#unless canEdit}}<p class="doom-readonly-note">The active GM controls Doom.</p>{{/unless}}
-        {{#if expanded}}<p class="doom-subnote">Expended Doom available to recover: <strong>{{spent}}</strong></p>{{/if}}
-    </div>
-    <hr>
-    <div class="doom-section gain-section">
-        <h3>Manual Adjustment</h3>
-        <button type="button" data-action="gainDoom" {{#unless canEdit}}disabled{{/unless}}><i class="fas fa-plus"></i> Manually add 1 Doom</button>
-        <p class="doom-subnote">Use the numeric field above for GM corrections.</p>
-    </div>
-    <hr>
-    <div class="doom-section spend-section">
-        <h3>Spend Doom — Monster Vault</h3>
-        <div class="btn-column">
-            <button type="button" data-action="spendDoom" data-spend="advantage" {{#unless canEdit}}disabled{{/unless}}>Attack roll advantage (1)</button>
-            <button type="button" data-action="spendDoom" data-spend="disadvantage" {{#unless canEdit}}disabled{{/unless}}>PC save disadvantage (1)</button>
-            <button type="button" data-action="spendDoom" data-spend="recharge" {{#if usedRecharge}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Refresh limited-use feature (1){{#if usedRecharge}} — used{{/if}}</button>
+
+    <div class="doom-compact-bank">
+        <div class="doom-compact-counter">
+            <label for="manual-doom-input">DOOM BANK</label>
+            <input type="number" id="manual-doom-input" min="0" step="1" value="{{doom}}" title="Manually correct the Doom total" {{#unless canEdit}}disabled{{/unless}}>
         </div>
-        <p class="doom-subnote">Limited-use refresh may be spent only once per encounter.</p>
-        <div class="custom-spend-row">
-            <input type="number" id="custom-spend-val" value="1" min="1" step="1" aria-label="Custom Doom spend amount" {{#unless canEdit}}disabled{{/unless}}>
-            <button type="button" data-action="spendDoom" class="custom-btn" {{#unless canEdit}}disabled{{/unless}}>Custom Spend</button>
+        <div class="doom-compact-manual">
+            <button type="button" data-action="gainDoom" title="Manually add one Doom" {{#unless canEdit}}disabled{{/unless}}><i class="fas fa-plus"></i> Add 1</button>
+            <div class="doom-compact-custom">
+                <input type="number" id="custom-spend-val" value="1" min="1" step="1" aria-label="Custom Doom spending amount" title="Custom number of Doom to spend" {{#unless canEdit}}disabled{{/unless}}>
+                <button type="button" data-action="spendDoom" class="custom-btn" title="Spend custom Doom amount" {{#unless canEdit}}disabled{{/unless}}>Spend</button>
+            </div>
         </div>
     </div>
+    {{#unless canEdit}}<p class="doom-readonly-note">The active GM controls Doom.</p>{{/unless}}
+
+    <div class="doom-compact-section">
+        <h3>Monster Vault <span>Spend 1 Doom</span></h3>
+        <div class="doom-compact-grid">
+            <button type="button" data-action="spendDoom" data-spend="advantage" title="Give a creature advantage on an attack roll; costs 1 Doom." aria-label="Creature attack advantage, spend 1 Doom" {{#unless canEdit}}disabled{{/unless}}>Attack ADV</button>
+            <button type="button" data-action="spendDoom" data-spend="disadvantage" title="Impose disadvantage on a PC saving throw; costs 1 Doom." aria-label="PC saving throw disadvantage, spend 1 Doom" {{#unless canEdit}}disabled{{/unless}}>PC Save DIS</button>
+            <button type="button" data-action="spendDoom" data-spend="recharge" title="Refresh or gain one additional use of a creature's limited-use feature. Once per encounter; costs 1 Doom." aria-label="Recharge limited-use feature, once per encounter, spend 1 Doom" {{#if usedRecharge}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Recharge{{#if usedRecharge}} ✓{{/if}}</button>
+        </div>
+    </div>
+
     {{#if expanded}}
-    <hr>
-    <div class="doom-section expanded-doom-section">
-        <h3>Expanded Doom — GMG</h3>
-        <p class="doom-subnote">Qualifying events before the encounter (maximum starting Doom: twice the base).</p>
-        <div class="btn-column">
-            <button type="button" data-action="preBonus" data-trigger="trap" {{#unless canEdit}}disabled{{/unless}}>Trap disarm fails by 5+ (+1)</button>
-            <button type="button" data-action="preBonus" data-trigger="warning" {{#unless canEdit}}disabled{{/unless}}>Enemy ally escapes to warn (+1)</button>
-            <button type="button" data-action="preBonus" data-trigger="rest" {{#unless canEdit}}disabled{{/unless}}>Conscious time-sensitive long rest (+1)</button>
+    <details class="doom-expanded-details" id="doom-expanded-details">
+        <summary>
+            <span><i class="fas fa-book-open"></i> Expanded Doom</span>
+            <span class="doom-expanded-summary-info" title="Spent Doom available to recover">Recoverable <strong>{{spent}}</strong> <i class="fas fa-chevron-down doom-expand-chevron"></i></span>
+        </summary>
+        <div class="doom-expanded-body">
+            <div class="doom-compact-section">
+                <h3>Before Combat <span>+{{startingBonus}} / {{startingDoom}} bonus</span></h3>
+                <div class="doom-compact-grid">
+                    <button type="button" data-action="preBonus" data-trigger="trap" title="A PC fails a trap-disarming check by 5 or more: +1 starting Doom (maximum 2× base)." {{#unless canEdit}}disabled{{/unless}}>Trap −5</button>
+                    <button type="button" data-action="preBonus" data-trigger="warning" title="An enemy's ally escapes to warn them: +1 starting Doom (maximum 2× base)." {{#unless canEdit}}disabled{{/unless}}>Warns Foes</button>
+                    <button type="button" data-action="preBonus" data-trigger="rest" title="The party knowingly takes a long rest in a time-sensitive situation: +1 starting Doom (maximum 2× base)." {{#unless canEdit}}disabled{{/unless}}>Late Rest</button>
+                </div>
+            </div>
+            <div class="doom-compact-section">
+                <h3>Recover Spent Doom <span>{{spent}} available · +1</span></h3>
+                <div class="doom-compact-grid">
+                    <button type="button" data-action="recoverDoom" data-trigger="miss5" title="Creature fails an attack roll or saving throw by 5 or more. Regain 1 previously spent Doom." {{#unless canEdit}}disabled{{/unless}}>Fail by 5+</button>
+                    <button type="button" data-action="recoverDoom" data-trigger="critical" title="Creature suffers a critical hit. Regain 1 previously spent Doom." {{#unless canEdit}}disabled{{/unless}}>Takes Crit</button>
+                    <button type="button" data-action="recoverDoom" data-trigger="massive" title="Creature takes massive damage. Regain 1 previously spent Doom." {{#unless canEdit}}disabled{{/unless}}>Massive Dmg</button>
+                </div>
+            </div>
+            <div class="doom-compact-section">
+                <h3>Extra Spending <span>1 Doom each</span></h3>
+                <div class="doom-compact-grid">
+                    <button type="button" data-action="spendDoom" data-spend="autoSave" title="A creature automatically succeeds on a saving throw instead of rolling. Once per encounter; costs 1 Doom." {{#if usedAutoSave}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Save{{#if usedAutoSave}} ✓{{/if}}</button>
+                    <button type="button" data-action="spendDoom" data-spend="autoAttack" title="A creature automatically succeeds on an attack instead of rolling. Once per encounter; costs 1 Doom." {{#if usedAutoAttack}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Auto Hit{{#if usedAutoAttack}} ✓{{/if}}</button>
+                    <button type="button" data-action="spendDoom" data-spend="movement" title="At the end of another creature's turn, a creature moves up to half its speed without provoking opportunity attacks; costs 1 Doom." {{#unless canEdit}}disabled{{/unless}}>Free Move</button>
+                </div>
+            </div>
         </div>
-        <p class="doom-subnote">During combat: recover 1 previously expended Doom per qualifying event.</p>
-        <div class="btn-column">
-            <button type="button" data-action="recoverDoom" data-trigger="miss5" {{#unless canEdit}}disabled{{/unless}}>Creature fails attack/save by 5+ (+1)</button>
-            <button type="button" data-action="recoverDoom" data-trigger="critical" {{#unless canEdit}}disabled{{/unless}}>Creature suffers critical hit (+1)</button>
-            <button type="button" data-action="recoverDoom" data-trigger="massive" {{#unless canEdit}}disabled{{/unless}}>Creature takes massive damage (+1)</button>
-        </div>
-        <p class="doom-subnote">Additional Doom spending options.</p>
-        <div class="btn-column">
-            <button type="button" data-action="spendDoom" data-spend="autoSave" {{#if usedAutoSave}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Automatic creature save (1){{#if usedAutoSave}} — used{{/if}}</button>
-            <button type="button" data-action="spendDoom" data-spend="autoAttack" {{#if usedAutoAttack}}disabled{{else}}{{#unless canEdit}}disabled{{/unless}}{{/if}}>Automatic creature attack (1){{#if usedAutoAttack}} — used{{/if}}</button>
-            <button type="button" data-action="spendDoom" data-spend="movement" {{#unless canEdit}}disabled{{/unless}}>Move half speed, no opportunity attacks (1)</button>
-        </div>
-        <p class="doom-subnote">Automatic save/attack: once per encounter each, in place of a roll. Movement: at the end of another creature's turn.</p>
-    </div>
+    </details>
     {{/if}}
 </div>

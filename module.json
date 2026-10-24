@@ -1,14 +1,14 @@
 {
   "id": "black-flag-doom-panel",
   "title": "Black Flag Doom Panel (v2 Development)",
-  "description": "Development: Monster Vault default Doom, optional Game Master's Guide Expanded Doom.",
+  "description": "Development: compact GM Doom Panel with optional collapsible Expanded Doom controls.",
   "authors": [
     {
       "name": "ghost00-Ricgames",
       "url": "https://github.com/ghost00-Ricgames/black-flag-doom-panel"
     }
   ],
-  "version": "2.0.0-dev.4",
+  "version": "2.0.0-dev.5",
   "compatibility": {
     "minimum": "14.359",
     "verified": "14"
@@ -31,7 +31,8 @@
     "styles/style.css",
     "styles/app-v2-overlay.css",
     "styles/milestone2.css",
-    "styles/milestone3.css"
+    "styles/milestone3.css",
+    "styles/compact-panel.css"
   ],
   "languages": [
     {

@@ -354,7 +354,7 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     id: "doom-panel-window",
     classes: ["bfdp-panel-app"],
     window: { title: "Doom Tracker", resizable: true },
-    position: { width: 260, height: "auto" },
+    position: { width: 330, height: "auto" },
     actions: {
       gainDoom: this._gainDoom,
       spendDoom: this._spendDoom,
@@ -366,6 +366,10 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
   static PARTS = {
     content: { template: "modules/" + MODULE_ID + "/templates/doom-panel.html" }
   };
+
+  // AppV2 rerenders after every Doom change. Preserve the expanded section
+  // without persisting cosmetic UI state into the shared world.
+  expandedSectionOpen = false;
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
@@ -423,6 +427,13 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _onRender(context, options) {
     await super._onRender(context, options);
+    const expandedDetails = this.element.querySelector("#doom-expanded-details");
+    if (expandedDetails) {
+      expandedDetails.open = this.expandedSectionOpen;
+      expandedDetails.addEventListener("toggle", () => {
+        this.expandedSectionOpen = expandedDetails.open;
+      });
+    }
     // Capture combat identity here to avoid applying a late input to another encounter.
     const combatId = displayedCombat()?.id;
     this.element.querySelector("#manual-doom-input")?.addEventListener("change", async event => {
