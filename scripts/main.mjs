@@ -1,11 +1,12 @@
 /**
- * Black Flag Doom Panel — Foundry V14 ApplicationV2 migration (development milestone 1).
+ * Black Flag Doom Panel - v2 development / Milestone 2.
+ * Foundry V14 ApplicationV2 + Combat document-scoped Doom state.
  *
- * The Doom rules and persistence model are intentionally preserved for this
- * architecture milestone. They will be replaced in the subsequent rules/state
- * milestone after the ToV Monster Vault and Game Master's Guide review.
+ * Rules and action labels intentionally remain at v1.x functionality parity.
+ * ToV Monster Vault / GMG Doom calculation and named actions come in Milestone 3.
  */
 const MODULE_ID = "black-flag-doom-panel";
+const DOOM_FLAG = "doomState";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const AUDIO = Object.freeze({
@@ -17,45 +18,189 @@ const AUDIO = Object.freeze({
 const state = {
   panel: null,
   overlay: null,
-  lastKnownValue: 0,
-  initialized: false
+  initialized: false,
+  displayedCombatId: null,
+  seenRevision: new Map(),
+  writeQueues: new Map()
 };
 
-// Setting changes reach all clients. Play once on each client without sending
-// another socket broadcast from every recipient.
+function reportError(context, error) {
+  console.error(MODULE_ID + " | " + context, error);
+  ui.notifications?.error("Doom Panel encountered an error; check the console.");
+}
+
 function playLocal(kind) {
   const options = AUDIO[kind];
   if (options) foundry.audio.AudioHelper.play({ ...options, autoplay: true }, false);
 }
 
-function rerenderOpen(app) {
-  if (app?.rendered) void app.render().catch(err => console.error(MODULE_ID + " | Render failed", err));
+function activeAuthority() {
+  return game.users.activeGM;
 }
 
-// Legacy v1 calculation retained temporarily to isolate the UI migration.
-// Correct encounter-CR calculation will replace this in milestone 3.
-function legacyStartingDoom(adversaries) {
+function canEdit() {
+  return Boolean(game.user?.isGM && activeAuthority()?.id === game.user.id);
+}
+
+function viewedCombat() {
+  return game.combats.viewed ?? game.combats.active ?? null;
+}
+
+function displayedCombat() {
+  const combat = viewedCombat();
+  return combat?.started ? combat : null;
+}
+
+function readBank(combat) {
+  const bank = combat?.getFlag(MODULE_ID, DOOM_FLAG);
+  if (!bank || bank.schema !== 1 || !Number.isSafeInteger(bank.current) || bank.current < 0) return null;
+  return bank;
+}
+
+function displayedBank() {
+  const combat = displayedCombat();
+  const bank = readBank(combat);
+  return bank?.active ? bank : null;
+}
+
+function legacyStartingDoom(combat) {
+  // Temporary v1.x parity: replaced by ToV table / encounter-CR in milestone 3.
+  const adversaries = [...combat.combatants].filter(c => c.actor && !c.actor.hasPlayerOwner);
   if (!adversaries.length) return 0;
   const maxCR = Math.max(0, ...adversaries.map(c => Number(c.actor?.system?.attributes?.cr) || 0));
   const base = maxCR >= 23 ? 6 : maxCR >= 17 ? 5 : maxCR >= 11 ? 4 : maxCR >= 5 ? 3 : 2;
   return base + adversaries.length - 1;
 }
 
-function activeAdversaries() {
-  return game.combats.active?.combatants.filter(c => c.actor && !c.actor.hasPlayerOwner) ?? [];
+function newBank(combat) {
+  return {
+    schema: 1,
+    active: true,
+    current: legacyStartingDoom(combat),
+    revision: 1,
+    lastAction: "start",
+    delta: 0
+  };
 }
 
-function getDoom() {
-  return game.settings.get(MODULE_ID, "doomPoints");
+// Serialize all local writes per Combat. Only Foundry's designated active GM
+// may mutate Doom, preventing separate GM clients from racing to overwrite it.
+function queueWrite(combat, operation) {
+  const previous = state.writeQueues.get(combat.id) ?? Promise.resolve();
+  const next = previous.catch(() => {}).then(operation);
+  state.writeQueues.set(combat.id, next);
+  void next.finally(() => {
+    if (state.writeQueues.get(combat.id) === next) state.writeQueues.delete(combat.id);
+  }).catch(() => {});
+  return next;
 }
 
-async function setDoom(amount) {
-  if (!game.user.isGM) return;
-  if (!Number.isSafeInteger(amount) || amount < 0) {
-    ui.notifications.warn("Doom must be a non-negative whole number.");
+async function persistBank(combat, bank) {
+  await combat.setFlag(MODULE_ID, DOOM_FLAG, bank);
+}
+
+function queueLifecycleUpdate(combat) {
+  if (!canEdit()) return;
+  return queueWrite(combat, async () => {
+    // Read only after waiting for earlier writes, never at hook dispatch time.
+    const bank = readBank(combat);
+    if (combat.started) {
+      if (!bank?.active) await persistBank(combat, newBank(combat));
+    } else if (bank?.active) {
+      await persistBank(combat, {
+        ...bank, active: false, revision: bank.revision + 1,
+        lastAction: "end", delta: 0
+      });
+    }
+  }).catch(error => reportError("combat lifecycle", error));
+}
+
+async function changeDoom(kind, value, combatId) {
+  if (!game.user?.isGM) return;
+  if (!canEdit()) {
+    ui.notifications.warn("Only the currently active GM can edit Doom. Other GMs can view its total.");
     return;
   }
-  await game.settings.set(MODULE_ID, "doomPoints", amount);
+  const combat = game.combats.get(combatId);
+  if (!combat || !combat.started) {
+    ui.notifications.warn("Select a started combat encounter before editing Doom.");
+    return;
+  }
+  if (!Number.isSafeInteger(value) || value < 0 || (kind !== "set" && value === 0)) {
+    ui.notifications.warn("Doom amounts must be valid whole numbers.");
+    return;
+  }
+  try {
+    return await queueWrite(combat, async () => {
+      if (!combat.started) return;
+      let bank = readBank(combat);
+      if (!bank?.active) {
+        bank = newBank(combat);
+        await persistBank(combat, bank);
+      }
+      let next;
+      if (kind === "gain") next = bank.current + value;
+      else if (kind === "spend") next = bank.current - value;
+      else if (kind === "set") next = value;
+      else return;
+      if (!Number.isSafeInteger(next) || next < 0) {
+        ui.notifications.warn("Insufficient Doom or invalid total.");
+        return;
+      }
+      if (next === bank.current) return;
+      await persistBank(combat, {
+        ...bank,
+        current: next,
+        revision: bank.revision + 1,
+        lastAction: kind,
+        delta: next - bank.current
+      });
+    });
+  } catch (error) {
+    reportError("Doom update", error);
+  }
+}
+
+function rerenderOpen(app) {
+  if (app?.rendered) void app.render().catch(error => reportError("render", error));
+}
+
+function syncVisibleApplications() {
+  if (!state.initialized) return;
+  const combat = displayedCombat();
+  const bank = displayedBank();
+  const id = bank ? combat.id : null;
+  if (id !== state.displayedCombatId) state.displayedCombatId = id;
+  if (!id) {
+    if (state.panel?.rendered) void state.panel.close().catch(error => reportError("close panel", error));
+    if (state.overlay?.rendered) void state.overlay.close().catch(error => reportError("close overlay", error));
+    return;
+  }
+  if (game.user.isGM) {
+    if (!state.panel.rendered) void state.panel.render({ force: true }).catch(error => reportError("show panel", error));
+    else rerenderOpen(state.panel);
+  }
+  if (!state.overlay.rendered) void state.overlay.render({ force: true }).catch(error => reportError("show overlay", error));
+  else rerenderOpen(state.overlay);
+}
+
+function handleBankAudio(combat) {
+  const bank = readBank(combat);
+  if (!bank) return;
+  const prior = state.seenRevision.get(combat.id) ?? 0;
+  if (bank.revision <= prior) return;
+  state.seenRevision.set(combat.id, bank.revision);
+  if (!state.initialized || viewedCombat()?.id !== combat.id || !bank.active || !combat.started) return;
+  if (bank.lastAction === "start") playLocal("start");
+  else if (bank.delta > 0) playLocal("gain");
+  else if (bank.delta < 0) playLocal("spend");
+}
+
+function onCombatUpdate(combat) {
+  handleBankAudio(combat);
+  // Run after the document update (unlike combatStart, which is a pre-update hook).
+  void queueLifecycleUpdate(combat);
+  syncVisibleApplications();
 }
 
 class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -76,26 +221,28 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const adversaries = activeAdversaries();
+    const combat = displayedCombat();
+    const adversaries = combat
+      ? [...combat.combatants].filter(c => c.actor && !c.actor.hasPlayerOwner)
+      : [];
     return {
       ...context,
-      doom: getDoom(),
+      doom: displayedBank()?.current ?? 0,
+      canEdit: canEdit(),
       adversaryCount: adversaries.length,
       maxCR: Math.max(0, ...adversaries.map(c => Number(c.actor?.system?.attributes?.cr) || 0))
     };
   }
 
-  /** @this {DoomPanel} */
   static async _gainDoom() {
-    if (!game.user.isGM) return;
-    await setDoom(getDoom() + 1);
+    const combat = displayedCombat();
+    if (combat) await changeDoom("gain", 1, combat.id);
   }
 
-  /** @this {DoomPanel} */
   static async _spendDoom(_event, target) {
-    if (!game.user.isGM) return;
-    const isCustom = target.classList.contains("custom-btn");
-    const raw = isCustom
+    const combat = displayedCombat();
+    if (!combat) return;
+    const raw = target.classList.contains("custom-btn")
       ? this.element.querySelector("#custom-spend-val")?.value
       : target.dataset.cost;
     const cost = Number(raw);
@@ -103,17 +250,23 @@ class DoomPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       ui.notifications.warn("Spend cost must be a positive whole number.");
       return;
     }
-    const current = getDoom();
-    if (current < cost) return;
-    await setDoom(current - cost);
+    await changeDoom("spend", cost, combat.id);
   }
 
   async _onRender(context, options) {
     await super._onRender(context, options);
+    // Capture combat identity here to avoid applying a late input to another encounter.
+    const combatId = displayedCombat()?.id;
     this.element.querySelector("#manual-doom-input")?.addEventListener("change", async event => {
-      const raw = event.currentTarget.value;
-      if (raw.trim() === "") return;
-      await setDoom(Number(raw));
+      if (!combatId) return;
+      const raw = event.currentTarget.value.trim();
+      if (raw === "") return;
+      const amount = Number(raw);
+      if (!Number.isSafeInteger(amount) || amount < 0) {
+        ui.notifications.warn("Doom must be a non-negative whole number.");
+        return;
+      }
+      await changeDoom("set", amount, combatId);
     });
   }
 }
@@ -132,77 +285,48 @@ class DoomOverlay extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    return { ...context, doom: getDoom() };
+    return { ...context, doom: displayedBank()?.current ?? 0 };
   }
 }
 
 Hooks.once("init", () => {
+  // Register legacy keys only for compatibility with existing v1.x worlds;
+  // they are no longer used or mutated by this build.
   game.settings.register(MODULE_ID, "doomPoints", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 0,
-    onChange: value => {
-      if (state.initialized) {
-        if (value > state.lastKnownValue) playLocal("gain");
-        else if (value < state.lastKnownValue) playLocal("spend");
-      }
-      state.lastKnownValue = value;
-      rerenderOpen(state.panel);
-      rerenderOpen(state.overlay);
-    }
+    scope: "world", config: false, type: Number, default: 0
   });
-
   game.settings.register(MODULE_ID, "activeCombat", {
-    scope: "world",
-    config: false,
-    type: Boolean,
-    default: false,
-    onChange: active => {
-      if (active) {
-        if (state.initialized) playLocal("start");
-        void state.overlay?.render({ force: true });
-        if (game.user.isGM) void state.panel?.render({ force: true });
-      } else {
-        void state.overlay?.close();
-        if (game.user.isGM) void state.panel?.close();
-      }
-    }
+    scope: "world", config: false, type: Boolean, default: false
   });
-
   game.blackFlagDoomPanel = state;
 });
 
-Hooks.once("ready", async () => {
+Hooks.once("ready", () => {
   state.panel = new DoomPanel();
   state.overlay = new DoomOverlay();
-  state.lastKnownValue = getDoom();
-  state.initialized = true;
-
-  // Never reset world-level Doom merely because the GM refreshed the page.
-  // Encounter-scoped lifecycle/state handling follows in milestone 2.
-  if (game.settings.get(MODULE_ID, "activeCombat")) {
-    await state.overlay.render({ force: true });
-    if (game.user.isGM) await state.panel.render({ force: true });
+  // Existing banks should not replay sound on browser refresh.
+  for (const combat of game.combats) {
+    const bank = readBank(combat);
+    if (bank) state.seenRevision.set(combat.id, bank.revision);
   }
+  state.initialized = true;
+  for (const combat of game.combats) void queueLifecycleUpdate(combat);
+  syncVisibleApplications();
 });
 
-Hooks.on("combatStart", async combat => {
-  if (!game.user.isGM) return;
-  const adversaries = combat.combatants.filter(c => c.actor && !c.actor.hasPlayerOwner);
-  await setDoom(legacyStartingDoom(adversaries));
-  await game.settings.set(MODULE_ID, "activeCombat", true);
+Hooks.on("updateCombat", onCombatUpdate);
+Hooks.on("createCombat", combat => {
+  void queueLifecycleUpdate(combat);
+  syncVisibleApplications();
 });
-
-// Temporary legacy behavior: deleting an unrelated combat still clears Doom.
-// Milestone 2 will associate the bank with the specific encounter.
-Hooks.on("deleteCombat", async () => {
-  if (!game.user.isGM) return;
-  await game.settings.set(MODULE_ID, "activeCombat", false);
-  await setDoom(0);
+Hooks.on("deleteCombat", combat => {
+  state.seenRevision.delete(combat.id);
+  state.writeQueues.delete(combat.id);
+  syncVisibleApplications();
 });
-
-Hooks.on("createCombatant", () => rerenderOpen(state.panel));
-Hooks.on("deleteCombatant", () => rerenderOpen(state.panel));
-Hooks.on("updateCombatant", () => rerenderOpen(state.panel));
+Hooks.on("canvasReady", syncVisibleApplications);
+Hooks.on("updateCombatant", syncVisibleApplications);
+Hooks.on("createCombatant", syncVisibleApplications);
+Hooks.on("deleteCombatant", syncVisibleApplications);
 Hooks.on("updateActor", () => rerenderOpen(state.panel));
+Hooks.on("userConnected", () => rerenderOpen(state.panel));

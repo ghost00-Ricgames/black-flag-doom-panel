@@ -1,24 +1,13 @@
-# Black Flag Doom Panel v2 — Milestone 1
+Milestone 2: Combat-scoped Doom. DEVELOPMENT ONLY.
 
-This is **development-only**, not a released version. The production branch and release ZIP are unchanged.
+Milestone 1 passed live GM/player testing. This milestone requires fresh Foundry V14 validation.
+Doom bank now persists in a per-Combat flag, with revision, current amount, active status and last-action information.
+Only Foundry's designated active GM can edit; other GMs have read-only controls. Writes are serialized.
+An unrelated combat deletion does not reset another bank. Refresh does not reset Doom or replay audio.
+Combats ending preserve an inactive bank; restarting creates a new one.
+Legacy v1 world settings remain registered but are not used. Do not upgrade a live world mid-combat.
+Old starting Doom calculation and action labels/costs remain intentionally unchanged until Milestone 3.
 
-## Architecture changes
-- ApplicationV2 / HandlebarsApplicationMixin replaces the two legacy Application windows.
-- Native `data-action` handlers replace jQuery click handlers.
-- New ES module entrypoint `scripts/main.mjs`, Foundry V14 manifest metadata and Black Flag 3.x requirement.
-- Existing overlay template, base stylesheet, images, language strings and legacy JS are preserved in the branch.
-- Local-only sound playback avoids multiplying socket broadcasts; V14 requires `autoplay: true`.
-- Do not reset Doom solely because the GM reloads; refresh the GM display when combatants or actors change.
-
-## Deliberately NOT completed
-- Rules-correct encounter CR / starting Doom, Expanded Doom and expended Doom bookkeeping.
-- Per-combat persistence, multiple-GM write arbitration or unrelated-combat deletion bug.
-- Issue #1 sound preferences and player-specific volumes.
-- Finished localization, animation, full regression tests and live Foundry V14 verification.
-
-**Important:** The old v1 Doom action labels and costs remain temporarily for functionality parity; they are not an assertion of Tales of the Valiant rules correctness.
-
-## Validate locally
-Run `node --check scripts/main.mjs` then `node tests/mock-smoke.mjs`.
-Test actual rendering and events in a disposable Foundry V14 world before merging.
-No production publishing, tag creation or workflow changes in this milestone.
+TEST: Start A, adjust, refresh GM/player, start B, switch A/B, delete A while viewing B, end/restart B,
+rapid-click gain, two GM sessions, scene changes, and check audio, overlays and console logs.
+No release tag or published package is created.
