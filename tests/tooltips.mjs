@@ -27,4 +27,13 @@ assert.ok(buttons.every(button => !button.includes(' title="')), "avoid duplicat
 assert.ok(stylesheet.includes("pointer-events: none"), "disabled rule actions must allow wrapper hover");
 assert.ok(stylesheet.includes("#tooltip.bfdp-doom-help"), "Foundry's tooltip gets readable sizing");
 
-console.log("PASS — all 14 action buttons and 2 inputs provide localized explanatory tooltips.");
+
+const notice = readFileSync(new URL("../THIRD-PARTY-NOTICES.md", import.meta.url), "utf8");
+assert.ok(notice.includes("Kobold Press") && notice.includes("CC BY 4.0"), "license attribution present");
+assert.ok(notice.includes("https://creativecommons.org/licenses/by/4.0/legalcode"), "CC BY license link");
+assert.ok(notice.includes("https://koboldpress.com/Black-Flag-Roleplaying"), "BFRD source link");
+for (const action of ["Trap", "Warning", "LongRest", "FailedRoll", "CriticalHit", "MassiveDamage", "AutomaticSave", "AutomaticAttack", "FreeMove"]) {
+  assert.ok(languages.BFDP.Tooltips[action].startsWith("GMG optional rule."), action + " independently reworded");
+}
+
+console.log("PASS — all tooltips, reworded GMG help, and BFRD licensing notice.");

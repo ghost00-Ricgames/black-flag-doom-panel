@@ -1,6 +1,9 @@
 # Changelog
 
 ## 2.0.0-rc.1 — Release candidate (not published)
+- Add Kobold Press BFRD attribution (CC BY 4.0), separate from MIT code license.
+- Include LICENSE and THIRD-PARTY-NOTICES.md in distributable ZIP.
+- Rewrite nine optional GMG tooltip explanations to avoid dependence on guide prose.
 - Incorporates all v2.0 development milestones and completed sound settings.
 - Release packaging and publication workflow safety fixes; no gameplay changes after dev.7.
 

@@ -39,8 +39,10 @@ jobs:
             templates/doom-panel.html templates/doom-overlay.html \
             styles/style.css styles/app-v2-overlay.css \
             styles/milestone2.css styles/milestone3.css styles/compact-panel.css \
-            lang/en.json
-          unzip -Z1 dist/black-flag-doom-panel.zip | grep -qx 'module.json'
+            lang/en.json LICENSE THIRD-PARTY-NOTICES.md
+          for required in module.json LICENSE THIRD-PARTY-NOTICES.md; do
+            unzip -Z1 dist/black-flag-doom-panel.zip | grep -qx "$required"
+          done
       - name: Upload test build artifact
         if: github.event_name != 'release'
         uses: actions/upload-artifact@v4

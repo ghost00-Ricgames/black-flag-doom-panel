@@ -48,6 +48,12 @@ v1.x and v2.x share the same module ID and cannot coexist in one Foundry user-da
 - Additional GMG events are applied by pressing the matching buttons, not by observing chat messages automatically.
 - Sound requires browser playback permissions and valid file paths for replacements.
 
+## Licensing and third-party attribution
+
+Original module code is provided under the MIT license (see [LICENSE](LICENSE)). Black Flag Reference Document material incorporated into this project is separately attributed under **CC BY 4.0** in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md), which is also included in the installable ZIP.
+
+The optional *Game Master's Guide* Expanded Doom controls implement game procedures using independently written explanatory text, rather than reproducing a published passage. This unofficial module is not affiliated with or endorsed by Kobold Press, and it does not include Kobold Press logos.
+
 ## Release status
 
 - Release candidate preparation is documented in [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
@@ -55,4 +61,4 @@ v1.x and v2.x share the same module ID and cannot coexist in one Foundry user-da
 - History: [CHANGELOG.md](CHANGELOG.md).
 - Outstanding user request: [#1 (audio preferences)](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/1) — implemented in RC, to be closed only following publication.
 
-License: MIT. The published v1.0.2 remains available until a v2.0.0 release is explicitly authorized.
+Original code: MIT. BFRD-derived material: CC BY 4.0 with attribution. The published v1.0.2 remains available until a v2.0.0 release is explicitly authorized.
