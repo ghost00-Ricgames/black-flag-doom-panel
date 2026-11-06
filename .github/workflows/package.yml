@@ -1,27 +1,35 @@
-name: Build Foundry Release Archive
+name: Validate and Package Foundry Module
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
-      - development/v2.0
-      - release/v2.0-rc1
       - main
+      - 'development/**'
+      - 'feature/**'
+      - 'fix/**'
+      - 'maintenance/**'
+  workflow_dispatch:
   release:
     types: [published]
 
+# PRs and routine development builds cannot publish or write to the repository.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  package:
+  verify:
+    name: Run tests and assemble installer
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout release source
+      - name: Checkout source or release tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || github.ref }}
-      - name: Validate JavaScript and run regression suite
+          ref: ${{ github.event.release.tag_name || github.sha }}
+
+      - name: Validate JavaScript and run regression tests
         shell: bash
         run: |
           set -euo pipefail
@@ -29,11 +37,32 @@ jobs:
           for test_file in tests/*.mjs; do
             node "$test_file"
           done
-      - name: Assemble Foundry module ZIP (root-level module.json)
+
+      - name: Verify release tag and manifest version agree
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          import assert from "node:assert/strict";
+          const m = JSON.parse(readFileSync("module.json", "utf8"));
+          const tag = process.env.RELEASE_TAG;
+          const repo = process.env.REPOSITORY;
+          assert.match(m.version, /^\d+\.\d+\.\d+$/, "GitHub Releases must use stable versions");
+          assert.equal(tag, "v" + m.version, "Release tag must match packaged manifest version");
+          assert.equal(m.manifest, `https://raw.githubusercontent.com/${repo}/main/module.json`);
+          assert.equal(m.download,
+            `https://github.com/${repo}/releases/download/${tag}/black-flag-doom-panel.zip`);
+          NODE
+
+      - name: Assemble root-flat Foundry installer ZIP
         shell: bash
         run: |
           set -euo pipefail
-          test -f module.json
           mkdir -p dist
           zip -q -r dist/black-flag-doom-panel.zip \
             module.json scripts/main.mjs \
@@ -45,38 +74,30 @@ jobs:
           for required in module.json LICENSE THIRD-PARTY-NOTICES.md; do
             unzip -Z1 dist/black-flag-doom-panel.zip | grep -qx "$required"
           done
-          test "$(unzip -Z1 dist/black-flag-doom-panel.zip | wc -l)" -ge 12
-      - name: Upload test build artifact
-        if: github.event_name != 'release'
+          test "$(unzip -Z1 dist/black-flag-doom-panel.zip | wc -l)" -eq 12
+
+      - name: Upload test artifact
         uses: actions/upload-artifact@v4
         with:
           name: black-flag-doom-panel-archive
           path: dist/black-flag-doom-panel.zip
-      - name: Publish stable GitHub release from main
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          VERSION="$(jq -r '.version' module.json)"
-          test "$VERSION" = '2.0.0' || { echo 'This one-time production publication gate is for 2.0.0 only'; exit 1; }
-          test "$(jq -r '.manifest' module.json)" = 'https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json'
-          test "$(jq -r '.download' module.json)" = 'https://github.com/ghost00-Ricgames/black-flag-doom-panel/releases/download/v2.0.0/black-flag-doom-panel.zip'
-          test "$(jq -r '.compatibility.minimum' module.json)" = '14.359'
-          if gh release view "v${VERSION}" >/dev/null 2>&1; then
-            echo "Release v${VERSION} already exists; refusing to overwrite it"
-            exit 1
-          fi
-          gh release create "v${VERSION}" dist/black-flag-doom-panel.zip \
-            --target "$GITHUB_SHA" \
-            --title "Black Flag Doom Panel v${VERSION}" \
-            --notes-file RELEASE-NOTES-v2.0.0.md \
-            --latest
-          echo "GitHub release v${VERSION} created with installer ZIP"
-      - name: Attach to approved GitHub release
-        if: github.event_name == 'release'
+
+  attach_release:
+    name: Attach tested installer to approved GitHub Release
+    if: github.event_name == 'release'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: black-flag-doom-panel-archive
+          path: dist
+      - name: Attach ZIP to existing GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.release.tag_name }}
           files: dist/black-flag-doom-panel.zip
           fail_on_unmatched_files: true

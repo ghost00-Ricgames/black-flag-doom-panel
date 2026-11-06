@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 — Foundry V14 update
+## 2.0.0 — Foundry V14 update (released 2026-10-24)
 - Stable release through GitHub manifests, independent of Foundry's official listing.
 - Monster Vault Doom rules, optional Expanded Doom, compact GM controls, hover explanations, per-combat persistence, player encounter selection, and configurable sound.
 - Includes BFRD attribution and independent GMG tooltip wording.
@@ -36,4 +36,3 @@
 ## 2.0.0-dev.1 — Foundry V14 UI migration
 - ApplicationV2 panel and overlay.
 
-The published production version is still v1.0.2.
