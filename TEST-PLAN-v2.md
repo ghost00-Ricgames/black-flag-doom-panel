@@ -1,4 +1,6 @@
-# Black Flag Doom Panel v2.0 — Final Live Test Plan
+# Black Flag Doom Panel v2.0 — Reusable Live Regression Test Plan
+
+This is the original v2.0 acceptance checklist, retained as a **reusable manual test plan**. Version 2.0.0 was published on GitHub on 2026-10-24 and installed successfully through its manifest. Unchecked boxes remain prompts for future test runs, not an assertion that past testing was skipped. For current publication steps see [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
 
 ## Gate 1 — Compatibility and startup (Windows V14)
 - [ ] Module appears in Foundry Setup and can be enabled in a disposable Black Flag 3.x test world.
@@ -42,10 +44,9 @@
 - [ ] Re-run multiplayer tests on the Node.js test server.
 - [ ] Review README and migration warnings.
 
-## Release controls
-- [ ] All automated tests pass, both environments pass live tests.
-- [ ] Explicit user approval for release.
-- [ ] Prepare clean production package/ZIP/manifest, review diff, create release/tag as approved.
-- [ ] Merge only after the user approves. Verify production download/manifest and rollback path.
+## For future releases
+- [ ] All automated tests pass; run applicable live tests in a test world.
+- [ ] Explicit maintainer approval for a new release.
+- [ ] Review the versioned manifest and ZIP after release.
 
-**No merge, publication, tag, or closure of GitHub issue #1 without acceptance.**
+See [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) for the current GitHub-only release process.

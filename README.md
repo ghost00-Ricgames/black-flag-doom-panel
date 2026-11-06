@@ -42,11 +42,11 @@ Back up worlds before upgrading from v1.0.2. The two versions use the same modul
 
 ## GitHub-based updating
 
-The official Foundry directory publication workflow has been removed. **Automatic update detection still works through the module's manifest URL**, without calling the Foundry publishing API. Once v2.0.0 is approved and released, the production manifest stays at:
+The official Foundry directory publication workflow has been removed. **Automatic update detection still works through the module's manifest URL**, without calling the Foundry publishing API. The production manifest remains at this stable URL for future updates:
 
 `https://raw.githubusercontent.com/ghost00-Ricgames/black-flag-doom-panel/main/module.json`
 
-The published production manifest's `download` field must point to the versioned GitHub Release ZIP. Users of the existing v1.0.2 module already using the main-branch manifest can use Foundry's **Check Update / Update All** controls when v2.0.0 is available.
+The published production manifest's `download` field must point to the versioned GitHub Release ZIP. Users with the main-branch manifest can use Foundry's **Check Update / Update All** controls when a newer GitHub release is available. New releases must update the manifest version and download URL on `main`.
 
 **Important for RC testers:** If you previously installed the temporary `release/v2.0-rc1` manifest, install the stable module from the `main/module.json` URL above so future releases are detected.
 
@@ -69,6 +69,6 @@ The optional *Game Master's Guide* Expanded Doom controls implement game procedu
 - Release and update verification is documented in [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
 - Regression cases: [TEST-PLAN-v2.md](TEST-PLAN-v2.md).
 - History: [CHANGELOG.md](CHANGELOG.md).
-- Outstanding user request: [#1 (audio preferences)](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/1) — delivered in v2.0.0.
+- Audio preferences: [issue #1](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/1), completed in v2.0.0. Future request: [movable counter, issue #3](https://github.com/ghost00-Ricgames/black-flag-doom-panel/issues/3).
 
 Original code: MIT. BFRD-derived material: CC BY 4.0 with attribution. Previous versions remain available in GitHub Releases.
